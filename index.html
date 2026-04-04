@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Flujo de Caja — Gestión Diaria</title>
 <script>
 // ── Configuración Supabase (completar para activar historial compartido) ──
@@ -313,8 +314,6 @@ hr.div { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
 /* PDF footer */
 .pdf-footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; font-size: 10px; color: #9ca3af; }
 
-/* print handled by jsPDF */
-
 /* ── HISTORIAL ── */
 .hist-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .hist-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--text3); }
@@ -432,7 +431,7 @@ hr.div { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
   <div class="header-tag">📊 Herramienta financiera</div>
   <h1>Flujo de <span>Caja</span> Diario</h1>
   <p class="tagline">Lee todas las hojas · Excluye DEBIN · Concilia por medio de pago · Filtro por período</p>
-  <div class="version-badge" style="margin-bottom:24px">v1.0 · Actualizado: Abril 2026</div>
+  <div class="version-badge" style="margin-bottom:24px">v1.1 · Actualizado: Abril 2026</div>
 
   <!-- Drop -->
   <div class="drop" id="drop" onclick="document.getElementById('fi').click()">
@@ -443,21 +442,22 @@ hr.div { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
     <div class="progress" id="prog"></div>
   </div>
   <input type="file" id="fi" accept=".xlsx,.xls" style="display:none">
+
   <!-- Historial de períodos -->
-<div id="historial-panel" style="display:none; margin-top:20px;">
-  <div class="hist-header">
-    <span class="hist-title">📁 Historial de períodos</span>
-    <span class="hist-count" id="hist-count"></span>
+  <div id="historial-panel" style="display:none; margin-top:20px;">
+    <div class="hist-header">
+      <span class="hist-title">📁 Historial de períodos</span>
+      <span class="hist-count" id="hist-count"></span>
+    </div>
+    <div class="hist-list" id="hist-list"></div>
   </div>
-  <div class="hist-list" id="hist-list"></div>
-</div>
 
-<div class="supabase-setup">
-  ⚙️ <strong>Configuración pendiente:</strong> Para activar el historial compartido, seguí las instrucciones del <strong>README</strong> y completá las claves de Supabase en el archivo <code>config.js</code>.
-  <a href="#" onclick="alert('Ver README.md en el repositorio')">Ver instrucciones →</a>
-</div>
+  <div class="supabase-setup">
+    ⚙️ <strong>Configuración pendiente:</strong> Para activar el historial compartido, seguí las instrucciones del <strong>README</strong> y completá las claves de Supabase en el archivo <code>config.js</code>.
+    <a href="#" onclick="alert('Ver README.md en el repositorio')">Ver instrucciones →</a>
+  </div>
 
-<div class="file-bar" id="fbar">
+  <div class="file-bar" id="fbar">
     <span>📄</span>
     <span class="fname" id="fname"></span>
     <span class="fmeta" id="fmeta"></span>
@@ -495,58 +495,57 @@ hr.div { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
 
     <!-- Vistas -->
     <div id="view-tabla">
-    <!-- DEBIN notice -->
-    <div class="debin-badge" id="debinBadge"><span>⛔</span><span>La hoja <b>DEBIN</b> fue excluida del cálculo.</span></div>
+      <!-- DEBIN notice -->
+      <div class="debin-badge" id="debinBadge"><span>⛔</span><span>La hoja <b>DEBIN</b> fue excluida del cálculo.</span></div>
 
-    <!-- Stats ingresos -->
-    <div class="stats-section-title">Ingresos</div>
-    <div class="stats" id="statsIngresos"></div>
+      <!-- Stats ingresos -->
+      <div class="stats-section-title">Ingresos</div>
+      <div class="stats" id="statsIngresos"></div>
 
-    <!-- Stats egresos -->
-    <div class="stats-section-title" style="margin-top:16px">Egresos</div>
-    <div class="stats" id="statsEgresos"></div>
+      <!-- Stats egresos -->
+      <div class="stats-section-title" style="margin-top:16px">Egresos</div>
+      <div class="stats" id="statsEgresos"></div>
 
-    <!-- Egresos breakdown -->
-    <div class="egresos-panel" id="egresosPanel" style="margin-top:12px">
-      <div class="egresos-header" onclick="document.getElementById('egresosPanel').classList.toggle('open')">
-        <div class="egresos-header-left">⬇ Detalle por categoría</div>
-        <div class="egresos-header-right">
-          <span class="egresos-total" id="egresosTotal"></span>
-          <span class="egresos-toggle">▼</span>
+      <!-- Egresos breakdown -->
+      <div class="egresos-panel" id="egresosPanel" style="margin-top:12px">
+        <div class="egresos-header" onclick="document.getElementById('egresosPanel').classList.toggle('open')">
+          <div class="egresos-header-left">⬇ Detalle por categoría</div>
+          <div class="egresos-header-right">
+            <span class="egresos-total" id="egresosTotal"></span>
+            <span class="egresos-toggle">▼</span>
+          </div>
+        </div>
+        <div class="egresos-body">
+          <div class="egr-grid" id="egresosGrid"></div>
         </div>
       </div>
-      <div class="egresos-body">
-        <div class="egr-grid" id="egresosGrid"></div>
+
+      <!-- Saldo cuentas principales -->
+      <div class="saldo-panel" id="saldoPanel" style="margin-top:20px">
+        <div class="saldo-panel-header">★ Saldo neto — cuentas principales</div>
+        <div class="saldo-grid" id="saldoGrid"></div>
+        <div class="saldo-footer">
+          <span class="saldo-footer-lbl">Total</span>
+          <span class="saldo-footer-val" id="saldoTotal"></span>
+        </div>
       </div>
-    </div>
 
-    <!-- Saldo cuentas principales -->
-    <div class="saldo-panel" id="saldoPanel" style="margin-top:20px">
-      <div class="saldo-panel-header">★ Saldo neto — cuentas principales</div>
-      <div class="saldo-grid" id="saldoGrid"></div>
-      <div class="saldo-footer">
-        <span class="saldo-footer-lbl">Total</span>
-        <span class="saldo-footer-val" id="saldoTotal"></span>
+      <!-- Account cards -->
+      <div class="section-lbl">Detalle por medio de pago</div>
+      <div class="accounts" id="grid"></div>
+
+      <!-- Totals -->
+      <div class="totals-bar" id="totalsBar"></div>
+
+      <!-- Totales ventas/cobros por grupo -->
+      <div class="stats" id="statsGruposTotal" style="display:none; margin-top:20px"></div>
+
+      <div class="grupos-section" id="gruposSection" style="display:none; margin-top:16px">
+        <div class="section-lbl">Ventas y cobros por grupo de medio de pago</div>
+        <div class="grupos-grid" id="gruposGrid"></div>
       </div>
-    </div>
-
-    <!-- Account cards -->
-    <div class="section-lbl">Detalle por medio de pago</div>
-    <div class="accounts" id="grid"></div>
-
-    <!-- Totals -->
-    <div class="totals-bar" id="totalsBar"></div>
-
-    <!-- Totales ventas/cobros por grupo — pie del reporte -->
-    <div class="stats" id="statsGruposTotal" style="display:none; margin-top:20px"></div>
-
-    <div class="grupos-section" id="gruposSection" style="display:none; margin-top:16px">
-      <div class="section-lbl">Ventas y cobros por grupo de medio de pago</div>
-      <div class="grupos-grid" id="gruposGrid"></div>
-    </div>
 
     </div><!-- /view-tabla -->
-
 
     <!-- Panel de configuración (oculto por defecto) -->
     <div id="config-panel" style="display:none;margin-top:32px">
@@ -586,7 +585,6 @@ hr.div { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
 
     <!-- Gráficos -->
     <div id="view-graficos">
-      <!-- Compare controls -->
       <div class="compare-controls">
         <label>Comparar</label>
         <select id="cmp-tipo" onchange="renderCharts()">
@@ -606,45 +604,39 @@ hr.div { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
           <option value="todas">Todas</option>
         </select>
       </div>
-
-      <!-- Chart cards -->
       <div class="charts-grid" id="chartsGrid"></div>
     </div><!-- /view-graficos -->
 
   </div><!-- /results -->
 
 </div>
+
+<!-- PDF overlay -->
+<div id="pdf-overlay">
+  <div class="pdf-toolbar">
+    <span id="pdf-toolbar-title">Reporte</span>
+    <button class="pdf-toolbar button btn-print" id="btn-gen-pdf" onclick="generarPDF()">⬇ Descargar para imprimir</button>
+    <button class="pdf-toolbar button btn-close-pdf" onclick="cerrarPDF()">✕ Cerrar</button>
+  </div>
+  <div class="pdf-body" id="pdf-body"></div>
+</div>
+
 <script>
 // ── Config ────────────────────────────────────────────────
 let EXCLUIR = ['DEBIN'];
-// Categorías y palabras en descripción que se excluyen del reporte
-// Categorías que son transferencias internas entre cuentas propias
-// Se muestran en el detalle de cada cuenta pero NO suman en los totales globales
 let CATS_INTERNAS = ['transferencia entre cuentas'];
-
-// CATS_EXCLUIDAS: solo errores técnicos de carga y el saldo inicial de apertura (vuelto)
-// Las anulaciones NO se excluyen: se procesan con su signo y se muestran separadas
 let CATS_EXCLUIDAS = ['carga por error','reversa','devolución','devolucion','saldo inicial'];
-
-// Categorías que forman el TOTAL INGRESOS (indicador principal)
-// Solo Ventas + Carga de saldo cliente, neto de anulaciones — sin DEBIN, sin MO
 const CATS_INGRESO_PRINCIPAL = ['venta', 'carga de saldo cliente', 'ajuste caja'];
-
-// Categorías de anulación — restan del ingreso de la cuenta donde se cargan
 const CATS_ANULACION = [
   'anulación de venta','anulacion de venta',
   'anulación de carga de saldo cliente','anulacion de carga de saldo cliente',
 ];
 let DESC_EXCLUIDAS = ['error de carga','carga por error','reversa','saldo inicial de caja'];
 let CUENTAS_PPAL = ['efectivo','caja general','caja chica','cheque','tarjeta debito','tarjeta credito','qr','transferencia bancaria','mercado pago','modo','link de pago'];
-
-// Cuentas excluidas del indicador "Total ingresos de cobros"
-// Son cuentas internas/operativas, no de cobro directo a clientes
 let CUENTAS_SIN_INGRESO = ['caja general','caja chica','movimientos de caja','cuenta banco'];
 const COLORS = ['#4f8ef7','#27c785','#f7924f','#c084fc','#facc15','#f472b6','#38bdf8','#fb7185','#34d399','#60a5fa','#a78bfa','#4ade80','#fbbf24','#e879f9'];
 
 // ── Supabase config ────────────────────────────────────────
-// Reemplazá estos valores con los de tu proyecto Supabase
 const SUPABASE_URL = window.SUPABASE_URL || '';
 const SUPABASE_KEY = window.SUPABASE_ANON_KEY || '';
 let sbClient = null;
@@ -655,9 +647,9 @@ try {
 } catch(e) { console.warn('Supabase no disponible:', e.message); }
 
 // ── Estado global ─────────────────────────────────────────
-let state = null;         // datos crudos procesados
+let state = null;
 let periodoActual = 'total';
-let historial = [];       // períodos guardados en Supabase
+let historial = [];
 
 // ── Drag & Drop ───────────────────────────────────────────
 const dropEl = document.getElementById('drop');
@@ -668,26 +660,15 @@ document.getElementById('fi').addEventListener('change', e => { if (e.target.fil
 
 // ── Leer archivo ─────────────────────────────────────────
 function leer(file) {
-  // ── DIAGNÓSTICO VISIBLE ──
-  const diag = (msg) => {
-    showAlert(msg);
-    console.log('[DIAG]', msg);
-  };
-
-  diag('Archivo recibido: ' + file.name + ' (' + file.size + ' bytes)');
-
   if (typeof XLSX === 'undefined') {
-    diag('ERROR: SheetJS (XLSX) no está cargado. Sin internet los CDN no cargan.');
+    showAlert('ERROR: SheetJS (XLSX) no está cargado. Sin internet los CDN no cargan.');
     return;
   }
-  diag('SheetJS OK. Versión: ' + (XLSX.version || 'desconocida'));
-
   const ext = file.name.split('.').pop().toLowerCase();
   if (!['xlsx','xls'].includes(ext)) {
-    diag('ERROR: extensión no válida: ' + ext);
+    showAlert('Extensión no válida: ' + ext + '. El archivo debe ser .xlsx o .xls');
     return;
   }
-
   showAlert('');
   document.getElementById('prog').style.display = 'block';
 
@@ -695,36 +676,30 @@ function leer(file) {
   reader.onload = e => {
     try {
       const data = e.target.result;
-      diag('Archivo leído: ' + data.byteLength + ' bytes');
       if (!data || data.byteLength === 0) throw new Error('Archivo vacío');
-
-      diag('Parseando con SheetJS...');
       const wb = XLSX.read(data, { type:'array', cellDates:true, raw:true });
-      diag('Hojas encontradas: ' + wb.SheetNames.join(', '));
-
       document.getElementById('prog').style.display = 'none';
-      showAlert('');
       procesar(wb, file);
     } catch(err) {
       document.getElementById('prog').style.display = 'none';
-      diag('ERROR en lectura: ' + err.message);
+      showAlert('Error al leer el archivo: ' + err.message);
       console.error(err);
     }
   };
-  reader.onerror = (e) => {
+  reader.onerror = () => {
     document.getElementById('prog').style.display = 'none';
-    diag('ERROR FileReader: no se pudo leer el archivo');
+    showAlert('No se pudo leer el archivo. Intentá de nuevo.');
   };
   reader.readAsArrayBuffer(file);
 }
 
 // ── Procesar workbook ────────────────────────────────────
 function procesar(wb, file) {
-  const cuentas = [];     // { nombre, movs[] }
+  const cuentas = [];
   const excluidas = [];
 
   wb.SheetNames.forEach(sheetName => {
-    if (EXCLUIR.some(ex => sheetName.toUpperCase() === ex)) { excluidas.push(sheetName); return; }
+    if (EXCLUIR.some(ex => sheetName.toUpperCase() === ex.toUpperCase())) { excluidas.push(sheetName); return; }
     const ws = wb.Sheets[sheetName];
     if (!ws) return;
     const rows = XLSX.utils.sheet_to_json(ws, { header:1, raw:true, defval:'' });
@@ -742,14 +717,13 @@ function procesar(wb, file) {
       const row = rows[i];
       if (!row || row.every(c => (c||'').toString().trim() === '')) continue;
       const fechaCell = col.fecha !== -1 ? row[col.fecha] : null;
-      if (!fechaCell || fechaCell === '') continue;   // saldo inicial = sin fecha
+      if (!fechaCell || fechaCell === '') continue;
 
       const importe = parseNum(row[col.importe]);
       const fechaObj = toDateObj(fechaCell);
 
-      // Excluir anulaciones y cargas por error
-      const catRaw  = str(row, col.categoria);
-      const descRaw = str(row, col.descripcion);
+      const catRaw   = str(row, col.categoria);
+      const descRaw  = str(row, col.descripcion);
       const catNorm  = catRaw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
       const descNorm = descRaw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
       const esExcluido = CATS_EXCLUIDAS.some(c => catNorm.includes(c.normalize('NFD').replace(/[\u0300-\u036f]/g,'')))
@@ -761,7 +735,6 @@ function procesar(wb, file) {
         categoriaVal.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
           .includes(c.normalize('NFD').replace(/[\u0300-\u036f]/g,''))
       );
-      // Detectar anulaciones — restan del ingreso de la cuenta, se muestran separadas
       const catNormMov = norm(categoriaVal);
       const esAnulacion = CATS_ANULACION.some(a =>
         catNormMov === norm(a) || catNormMov.includes(norm(a))
@@ -786,7 +759,6 @@ function procesar(wb, file) {
     cuentas.push({ nombre: sheetName, movs, _excluidos });
   });
 
-  // Recolectar fechas únicas disponibles
   const allFechas = new Set();
   cuentas.forEach(c => c.movs.forEach(m => { if (m.fechaStr) allFechas.add(m.fechaStr); }));
   const fechasOrdenadas = [...allFechas].sort();
@@ -796,14 +768,12 @@ function procesar(wb, file) {
     document.getElementById('prog').style.display = 'none';
     return;
   }
+
   state = { cuentas, excluidas, fechas: fechasOrdenadas, fileName: file.name, fileSize: file.size, totalSheets: wb.SheetNames.length };
 
-  // Count excluded movements across all sheets for display
-  const totalExcluidosMovs = cuentas.reduce((a,c) => a + (c._excluidos||0), 0);
   document.getElementById('fname').textContent = file.name;
   document.getElementById('fbar').style.display = 'flex';
 
-  // Mostrar/ocultar tabs según cantidad de días
   const multiDia = fechasOrdenadas.length > 1;
   document.getElementById('periodTabs').style.display = multiDia ? 'flex' : 'none';
 
@@ -812,7 +782,7 @@ function procesar(wb, file) {
   render();
   document.getElementById('results').style.display = 'block';
   setTimeout(() => document.getElementById('results').scrollIntoView({ behavior:'smooth' }), 80);
-  // Guardar en historial y último archivo
+
   guardarPeriodo();
   guardarUltimoArchivo(file.name, state);
 }
@@ -823,7 +793,6 @@ function cambiarPeriodo(p) {
   document.querySelectorAll('.ptab').forEach(t => t.classList.toggle('active', t.dataset.p === p));
   updateDateDropdown();
   render();
-  // Sincronizar selector de agrupación en gráficos con el período activo
   const cmpPer = document.getElementById('cmp-periodo');
   if (cmpPer) {
     if (p === 'dia')    cmpPer.value = 'dia';
@@ -838,7 +807,6 @@ function updateDateDropdown() {
   const ds = document.getElementById('dateSelect');
   if (!state || periodoActual === 'total') { ds.style.display = 'none'; return; }
   ds.style.display = 'flex';
-
   const opciones = getOpciones();
   dd.innerHTML = opciones.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
 }
@@ -846,7 +814,6 @@ function updateDateDropdown() {
 function getOpciones() {
   const { fechas } = state;
   if (periodoActual === 'dia') {
-    // Contar movimientos por día (sin excluidos ni internos)
     const movsPorDia = {};
     state.cuentas.forEach(c => c.movs.forEach(m => {
       if (m.fechaStr) movsPorDia[m.fechaStr] = (movsPorDia[m.fechaStr] || 0) + 1;
@@ -875,7 +842,6 @@ function getOpciones() {
   return [];
 }
 
-// ── Filtrar movimientos según período seleccionado ────────
 function filtrarMovs(movs) {
   if (periodoActual === 'total') return movs;
   const val = document.getElementById('dateDropdown').value;
@@ -891,74 +857,61 @@ function render() {
   if (!state) return;
   const { cuentas, excluidas, fechas } = state;
 
-  // Construir cuentas filtradas
   const cuentasFiltradas = cuentas.map(c => {
     const movs = filtrarMovs(c.movs);
-    // Saldo: TODOS los movimientos con su signo real (excepto pases internos)
-    // Esto incluye ventas, cobros, egresos, anulaciones — todo impacta en el saldo
     const movsReales  = movs.filter(m => !m.esInterno);
     const neto        = movsReales.reduce((a,m) => a + m.importe, 0);
-
-    // Para los breakdowns visuales — separar por tipo
     const ingresosMovs   = movsReales.filter(m => m.importe > 0 && !m.esAnulacion);
     const egresosMovs    = movsReales.filter(m => m.importe < 0 && !m.esAnulacion);
     const anulacionMovs  = movsReales.filter(m => m.esAnulacion);
     const ingresos       = ingresosMovs.reduce((a,m) => a+m.importe, 0);
     const egresos        = egresosMovs.reduce((a,m) => a+m.importe, 0);
     const anulaciones    = anulacionMovs.reduce((a,m) => a+m.importe, 0);
-
-    // Ventas y carga para el desglose
     const ventas     = ingresosMovs.filter(m => norm(m.categoria) === 'venta').reduce((a,m) => a+m.importe, 0);
     const cargaSaldo = ingresosMovs.filter(m => norm(m.categoria).includes('carga de saldo')).reduce((a,m) => a+m.importe, 0);
     return { nombre: c.nombre, movs, ingresos, egresos, anulaciones, neto, ventas, cargaSaldo };
   }).filter(c => c.movs.length > 0 || cuentas.find(x=>x.nombre===c.nombre).movs.length > 0);
 
-  // Solo cuentas con movimientos en el filtro
   const activas = cuentasFiltradas.filter(c => c.movs.length > 0);
-
-  // ── TOTAL INGRESOS (indicador principal) ──
-  // Solo: Ventas + Carga de saldo cliente, neto de anulaciones
-  // Excluye: DEBIN (ya excluida como hoja), MO Taller, gastos, ajustes, transferencias
   const movsGlobal = activas.flatMap(c => c.movs.filter(m => !m.esInterno));
 
-  // Ventas y Carga: solo entradas (importe > 0)
-  // Ajuste caja: suma o resta según su signo real
   const totalIngresosBrutos = movsGlobal.filter(m => !m.esAnulacion).reduce((a,m) => {
     const cn = norm(m.categoria);
     const esAjuste = cn.includes('ajuste caja');
     const esVentaOCarga = ['venta','carga de saldo cliente'].some(c => cn.includes(norm(c)));
-    if (esAjuste) return a + m.importe;                    // ajuste: siempre con su signo
-    if (esVentaOCarga && m.importe > 0) return a + m.importe; // venta/carga: solo positivos
+    if (esAjuste) return a + m.importe;
+    if (esVentaOCarga && m.importe > 0) return a + m.importe;
     return a;
   }, 0);
-
-  const totalAnulaciones = movsGlobal.filter(m => m.esAnulacion)
-    .reduce((a,m) => a+m.importe, 0);
-
-  // Total ingresos = brutos - anulaciones
+  const totalAnulaciones = movsGlobal.filter(m => m.esAnulacion).reduce((a,m) => a+m.importe, 0);
   const totalIngresos = totalIngresosBrutos + totalAnulaciones;
-
-  // ── SALDO NETO total (todos los movimientos con su signo real) ──
   const totalNeto = activas.reduce((a,c) => a + c.neto, 0);
-
-  // ── Para el desglose visual ──
   const totalEgresos     = movsGlobal.filter(m => m.importe < 0 && !m.esAnulacion).reduce((a,m) => a+m.importe, 0);
   const totalVentas      = movsGlobal.filter(m => !m.esAnulacion && m.importe > 0 && norm(m.categoria) === 'venta').reduce((a,m) => a+m.importe, 0);
   const totalCarga       = movsGlobal.filter(m => !m.esAnulacion && m.importe > 0 && norm(m.categoria).includes('carga de saldo')).reduce((a,m) => a+m.importe, 0);
   const totalAjuste      = movsGlobal.filter(m => !m.esAnulacion && norm(m.categoria) === 'ajuste caja').reduce((a,m) => a+m.importe, 0);
   const totalMovs        = activas.reduce((a,c) => a+c.movs.length, 0);
-  const totalInternos    = activas.flatMap(c => c.movs.filter(m => m.esInterno)).length;
 
-  // Título dinámicp
+  // ── Egresos por categoría (necesario para PDF y render) ──
+  const egresosCats = {};
+  activas.forEach(c => {
+    c.movs.filter(m => m.importe < 0).forEach(m => {
+      const cat = m.categoria || 'Otros egresos';
+      if (!egresosCats[cat]) egresosCats[cat] = { total: 0, count: 0 };
+      egresosCats[cat].total += m.importe;
+      egresosCats[cat].count++;
+    });
+  });
+  const catList = Object.entries(egresosCats).sort((a,b) => a[1].total - b[1].total);
+
   const periodoLabel = getPeriodoLabel();
   document.getElementById('rTitle').textContent = periodoLabel;
   const totalExcl = state.cuentas.reduce((a,c) => a + (c._excluidos||0), 0);
   document.getElementById('rMeta').textContent =
     `${activas.length} medios de pago · ${totalMovs} movimientos` +
-    (totalExcl > 0 ? ` · ${totalExcl} anulación${totalExcl!==1?'es':''} excluida${totalExcl!==1?'s':''}` : '') +
+    (totalExcl > 0 ? ` · ${totalExcl} exclusión${totalExcl!==1?'es':''} aplicada${totalExcl!==1?'s':''}` : '') +
     (excluidas.length ? ` · Hoja excluida: ${excluidas.join(', ')}` : '');
 
-  // DEBIN
   document.getElementById('debinBadge').style.display =
     excluidas.some(e => e.toUpperCase()==='DEBIN') ? 'flex' : 'none';
 
@@ -993,29 +946,6 @@ function render() {
   `;
 
   // ── Stats Egresos ──
-  const egresosCats = {};
-  activas.forEach(c => {
-    c.movs.filter(m => m.importe < 0).forEach(m => {
-      const cat = m.categoria || 'Otros egresos';
-      if (!egresosCats[cat]) egresosCats[cat] = { total: 0, count: 0 };
-      egresosCats[cat].total += m.importe;
-      egresosCats[cat].count++;
-    });
-  });
-  const catList = Object.entries(egresosCats).sort((a,b) => a[1].total - b[1].total);
-
-  // Anulaciones como grupo separado
-  const totalAnulacionesCatsRender = {};
-  activas.forEach(c => {
-    c.movs.filter(m => !m.esInterno && m.esAnulacion).forEach(m => {
-      const cat = m.categoria || 'Anulación';
-      if (!totalAnulacionesCatsRender[cat]) totalAnulacionesCatsRender[cat] = { total:0, count:0 };
-      totalAnulacionesCatsRender[cat].total += m.importe;
-      totalAnulacionesCatsRender[cat].count++;
-    });
-  });
-  const anuList = Object.entries(totalAnulacionesCatsRender).sort((a,b) => a[1].total - b[1].total);
-
   document.getElementById('statsEgresos').innerHTML = `
     <div class="stat-card hi-red">
       <div class="sc-lbl">Egresos operativos</div>
@@ -1029,6 +959,18 @@ function render() {
       <div class="sc-sub">${d.count} mov · ${pct(Math.abs(d.total), Math.abs(totalEgresos))}</div>
     </div>`).join('')}
   `;
+
+  // Anulaciones para el breakdown
+  const totalAnulacionesCatsRender = {};
+  activas.forEach(c => {
+    c.movs.filter(m => !m.esInterno && m.esAnulacion).forEach(m => {
+      const cat = m.categoria || 'Anulación';
+      if (!totalAnulacionesCatsRender[cat]) totalAnulacionesCatsRender[cat] = { total:0, count:0 };
+      totalAnulacionesCatsRender[cat].total += m.importe;
+      totalAnulacionesCatsRender[cat].count++;
+    });
+  });
+  const anuList = Object.entries(totalAnulacionesCatsRender).sort((a,b) => a[1].total - b[1].total);
 
   // ── Egresos breakdown ──
   document.getElementById('egresosTotal').textContent = ars(Math.abs(totalEgresos) + Math.abs(totalAnulaciones));
@@ -1075,7 +1017,7 @@ function render() {
   stv.textContent = ars(saldoCombinado);
   stv.className = 'saldo-footer-val ' + (saldoCombinado>=0?'c-green':'c-red');
 
-  // ── Account cards (ordenadas mayor a menor neto) ──
+  // ── Account cards ──
   const sorted = [...activas].sort((a,b) => b.neto - a.neto);
   let html = '';
   sorted.forEach((c, idx) => {
@@ -1089,7 +1031,6 @@ function render() {
     if (c.movs.length === 0) {
       txBody = `<tr class="empty-row"><td colspan="5">Sin movimientos</td></tr>`;
     } else {
-      // Ordenar movimientos de más reciente a más antiguo
       const movsOrd = [...c.movs].sort((a,b) => {
         if (a.fechaObj && b.fechaObj) return b.fechaObj - a.fechaObj;
         return b.fechaStr.localeCompare(a.fechaStr);
@@ -1185,7 +1126,6 @@ function render() {
     </div>
   `;
 
-  // ── Grupos de medios de pago ──
   renderGrupos(activas);
 }
 
@@ -1208,10 +1148,8 @@ function toDateObj(f) {
   if (!f || f === '') return null;
   if (f instanceof Date) return f;
   const s = f.toString().trim();
-  // "dd/mm/yyyy hh:mm:ss"
   const m1 = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
   if (m1) return new Date(+m1[3], +m1[2]-1, +m1[1]);
-  // "yyyy-mm-dd"
   const m2 = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (m2) return new Date(+m2[1], +m2[2]-1, +m2[3]);
   return null;
@@ -1223,7 +1161,6 @@ function isoDate(d) {
   return `${d.getFullYear()}-${mm}-${dd}`;
 }
 function isoWeek(iso) {
-  // iso = "2026-03-20"
   if (!iso) return '';
   const d = new Date(iso + 'T12:00:00');
   const jan1 = new Date(d.getFullYear(), 0, 1);
@@ -1231,7 +1168,6 @@ function isoWeek(iso) {
   return `${d.getFullYear()}-W${String(week).padStart(2,'0')}`;
 }
 function fmtDiaLabel(iso) {
-  // "2026-03-20" → "Vie 20/03/2026"
   if (!iso) return '—';
   const [y,m,d] = iso.split('-');
   const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
@@ -1248,7 +1184,6 @@ function formatFecha(f) {
     const min = String(f.getMinutes()).padStart(2,'0');
     return `${d}/${m}/${y} ${h}:${min}`;
   }
-  // String "dd/mm/yyyy hh:mm:ss" → "dd/mm/yyyy hh:mm"
   const s = f.toString().trim();
   return s.length > 16 ? s.slice(0,16) : s;
 }
@@ -1275,7 +1210,6 @@ function detectCols(headers) {
   };
 }
 
-// ── Parsear número ───────────────────────────────────────
 function parseNum(v) {
   if (v === null || v === undefined || v === '') return NaN;
   if (typeof v === 'number') return v;
@@ -1283,7 +1217,6 @@ function parseNum(v) {
   return parseFloat(s);
 }
 
-// ── Formato $ Argentina: $ 1.234.567,89 ─────────────────
 function ars(n, abs) {
   if (n === null || n === undefined || isNaN(n)) return '—';
   const v = abs ? Math.abs(n) : n;
@@ -1293,13 +1226,11 @@ function ars(n, abs) {
   return `${sign}$ ${parts[0]},${parts[1]}`;
 }
 
-// ── Porcentaje ───────────────────────────────────────────
 function pct(num, den) {
   if (!den || isNaN(den) || den === 0) return '—';
   return (Math.abs(num) / Math.abs(den) * 100).toFixed(1) + '%';
 }
 
-// ── Normalizar string para comparaciones ─────────────────
 function norm(s) {
   return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
 }
@@ -1308,22 +1239,18 @@ function str(row, idx) {
   return idx !== -1 && row[idx] ? row[idx].toString().trim() : '';
 }
 
-// ── Escape HTML ──────────────────────────────────────────
 function esc(s) {
   return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── Toggle card ──────────────────────────────────────────
 function toggle(idx) { document.getElementById('card'+idx).classList.toggle('open'); }
 
-// ── Alert ────────────────────────────────────────────────
 function showAlert(msg) {
   const el = document.getElementById('alertBox');
   el.textContent = msg ? '⚠ ' + msg : '';
   el.style.display = msg ? 'block' : 'none';
 }
 
-// ── Reset ────────────────────────────────────────────────
 function resetear() {
   state = null;
   document.getElementById('results').style.display = 'none';
@@ -1339,7 +1266,6 @@ function exportar() {
   const { cuentas, excluidas } = state;
   const wb2 = XLSX.utils.book_new();
 
-  // Determinar movimientos filtrados para cada cuenta
   const activas = cuentas.map(c => {
     const movs = filtrarMovs(c.movs);
     const ingresos = movs.filter(m=>m.importe>0).reduce((a,m)=>a+m.importe,0);
@@ -1354,7 +1280,6 @@ function exportar() {
   const tv = activas.reduce((a,c)=>a+c.ventas,0);
   const tc = activas.reduce((a,c)=>a+c.cargaSaldo,0);
 
-  // Resumen
   const resumen = [
     ['REPORTE DE FLUJO DE CAJA'],
     ['Período:', getPeriodoLabel()],
@@ -1372,7 +1297,6 @@ function exportar() {
   wsR['!cols'] = [{wch:28},{wch:18},{wch:16},{wch:16},{wch:16},{wch:20},{wch:8}];
   XLSX.utils.book_append_sheet(wb2, wsR, 'Resumen');
 
-  // Detalle por cuenta
   activas.forEach(c => {
     const data = [
       ['CUENTA:', c.nombre],
@@ -1399,7 +1323,6 @@ function exportar() {
 
 let chartInstances = {};
 
-// ── View toggle ──────────────────────────────────────────
 function setView(v) {
   if (v === 'graficos' && typeof Chart === 'undefined') {
     alert('Los gráficos requieren conexión a internet para cargar Chart.js. El resto de la app funciona sin conexión.');
@@ -1415,7 +1338,6 @@ function setView(v) {
   }
 }
 
-// ── Poblar select de cuentas ─────────────────────────────
 function populateCuentaSelect() {
   const sel = document.getElementById('cmp-cuenta');
   const cuentas = state.cuentas.map(c => c.nombre).filter(n => n.toUpperCase() !== 'DEBIN');
@@ -1423,21 +1345,16 @@ function populateCuentaSelect() {
     cuentas.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
 }
 
-// ── Agregar datos a state: serie temporal ────────────────
 function buildSeriesTemporal(agrupacion) {
-  // agrupacion: 'dia' | 'semana' | 'mes'
-  const mapa = {};  // key → { ingresos, egresos, ventas, carga, porCuenta:{} }
-
+  const mapa = {};
   const cuentaFiltro = document.getElementById('cmp-cuenta')?.value || 'todas';
 
   state.cuentas.forEach(c => {
     if (c.nombre.toUpperCase() === 'DEBIN') return;
     if (cuentaFiltro !== 'todas' && c.nombre !== cuentaFiltro) return;
-
     c.movs.forEach(m => {
       if (m.esInterno) return;
       if (!m.fechaStr) return;
-
       let key;
       if (agrupacion === 'dia')    key = m.fechaStr;
       else if (agrupacion === 'semana') key = isoWeek(m.fechaStr);
@@ -1449,7 +1366,6 @@ function buildSeriesTemporal(agrupacion) {
       const catL = m.categoria.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
       if (catL === 'venta' && m.importe > 0) mapa[key].ventas += m.importe;
       if (catL.includes('carga de saldo') && m.importe > 0) mapa[key].carga += m.importe;
-
       if (!mapa[key].porCuenta[c.nombre]) mapa[key].porCuenta[c.nombre] = 0;
       mapa[key].porCuenta[c.nombre] += m.importe;
     });
@@ -1457,11 +1373,9 @@ function buildSeriesTemporal(agrupacion) {
 
   const keys = Object.keys(mapa).sort();
   keys.forEach(k => { mapa[k].neto = mapa[k].ingresos + mapa[k].egresos; });
-
   return { mapa, keys };
 }
 
-// ── Formatear label de eje X ─────────────────────────────
 function fmtKey(k, agrupacion) {
   if (agrupacion === 'dia') {
     const [y,m,d] = k.split('-');
@@ -1469,37 +1383,23 @@ function fmtKey(k, agrupacion) {
     const dN = dias[new Date(+y,+m-1,+d).getDay()];
     return `${dN} ${d}/${m}`;
   }
-  if (agrupacion === 'semana') {
-    // "2026-W11" → "Sem 11"
-    return k.replace(/\d{4}-/, 'Sem ');
-  }
-  // mes "2026-03"
+  if (agrupacion === 'semana') return k.replace(/\d{4}-/, 'Sem ');
   const [y,m] = k.split('-');
   const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   return `${meses[+m-1]} ${y}`;
 }
 
-// ── Destroy chart safely ─────────────────────────────────
 function destroyChart(id) {
   if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
   const el = document.getElementById(id);
   if (el) { const p = el.parentNode; p.innerHTML = ''; const c = document.createElement('canvas'); c.id = id; p.appendChild(c); }
 }
 
-// ── Colores ──────────────────────────────────────────────
 const C = {
-  green:      'rgba(39,199,133,1)',
-  greenFill:  'rgba(39,199,133,0.15)',
-  red:        'rgba(240,82,82,1)',
-  redFill:    'rgba(240,82,82,0.15)',
-  blue:       'rgba(79,142,247,1)',
-  blueFill:   'rgba(79,142,247,0.15)',
-  gold:       'rgba(251,191,36,1)',
-  goldFill:   'rgba(251,191,36,0.12)',
-  purple:     'rgba(192,132,252,1)',
-  purpleFill: 'rgba(192,132,252,0.12)',
-  teal:       'rgba(56,189,248,1)',
-  tealFill:   'rgba(56,189,248,0.12)',
+  green:'rgba(39,199,133,1)', greenFill:'rgba(39,199,133,0.15)',
+  red:'rgba(240,82,82,1)',    redFill:'rgba(240,82,82,0.15)',
+  blue:'rgba(79,142,247,1)',  blueFill:'rgba(79,142,247,0.15)',
+  gold:'rgba(251,191,36,1)',  goldFill:'rgba(251,191,36,0.12)',
 };
 const PALETTE = ['#4f8ef7','#27c785','#f7924f','#c084fc','#facc15','#f472b6','#38bdf8','#fb7185','#34d399','#a78bfa','#4ade80','#fbbf24'];
 
@@ -1521,193 +1421,64 @@ function fmtShort(n) {
   return n.toString();
 }
 
-// ── Render todos los gráficos ────────────────────────────
 function renderCharts() {
   if (!state) return;
-
-  const tipo      = document.getElementById('cmp-tipo').value;
-  const agrup     = document.getElementById('cmp-periodo').value;
+  const tipo  = document.getElementById('cmp-tipo').value;
+  const agrup = document.getElementById('cmp-periodo').value;
   const { mapa, keys } = buildSeriesTemporal(agrup);
-  const labels    = keys.map(k => fmtKey(k, agrup));
-  const grid      = document.getElementById('chartsGrid');
-
-  // Limpiar
+  const labels = keys.map(k => fmtKey(k, agrup));
+  const grid   = document.getElementById('chartsGrid');
   grid.innerHTML = '';
   chartInstances = {};
 
-  if (tipo === 'ingreso-egreso') {
-    renderIngresosEgresos(grid, mapa, keys, labels, agrup);
-  } else if (tipo === 'ventas-carga') {
-    renderVentasCarga(grid, mapa, keys, labels);
-  } else if (tipo === 'neto') {
-    renderNeto(grid, mapa, keys, labels);
-  } else if (tipo === 'cuentas') {
-    renderPorCuenta(grid, agrup);
-  }
+  if (tipo === 'ingreso-egreso') renderIngresosEgresos(grid, mapa, keys, labels, agrup);
+  else if (tipo === 'ventas-carga') renderVentasCarga(grid, mapa, keys, labels);
+  else if (tipo === 'neto') renderNeto(grid, mapa, keys, labels);
+  else if (tipo === 'cuentas') renderPorCuenta(grid, agrup);
 }
 
-// ── 1. Ingresos vs Egresos ───────────────────────────────
 function renderIngresosEgresos(grid, mapa, keys, labels, agrup) {
   grid.className = 'charts-grid';
-
-  // Chart 1: Barras agrupadas ingresos/egresos
   grid.innerHTML = `
-    <div class="chart-card wide">
-      <div class="chart-title">Ingresos vs Egresos</div>
-      <div class="chart-sub">Comparación por ${agrup === 'dia' ? 'día' : agrup === 'semana' ? 'semana' : 'mes'}</div>
-      <div class="chart-wrap chart-wrap-tall"><canvas id="ch-ingegr"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Evolución de ingresos</div>
-      <div class="chart-sub">Línea de tendencia</div>
-      <div class="chart-wrap"><canvas id="ch-ing-line"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Evolución de egresos</div>
-      <div class="chart-sub">Línea de tendencia</div>
-      <div class="chart-wrap"><canvas id="ch-egr-line"></canvas></div>
-    </div>
-  `;
-
-  chartInstances['ch-ingegr'] = new Chart(document.getElementById('ch-ingegr'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Ingresos', data: keys.map(k => mapa[k].ingresos), backgroundColor: C.greenFill, borderColor: C.green, borderWidth: 2, borderRadius: 4 },
-        { label: 'Egresos',  data: keys.map(k => Math.abs(mapa[k].egresos)), backgroundColor: C.redFill, borderColor: C.red, borderWidth: 2, borderRadius: 4 },
-      ]
-    },
-    options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ars(ctx.raw)}` } } } }
-  });
-
-  chartInstances['ch-ing-line'] = new Chart(document.getElementById('ch-ing-line'), {
-    type: 'line',
-    data: { labels, datasets: [{ label: 'Ingresos', data: keys.map(k => mapa[k].ingresos), borderColor: C.green, backgroundColor: C.greenFill, fill: true, tension: 0.35, pointRadius: 4, pointBackgroundColor: C.green }] },
-    options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, tooltip: { callbacks: { label: ctx => `Ingresos: ${ars(ctx.raw)}` } } } }
-  });
-
-  chartInstances['ch-egr-line'] = new Chart(document.getElementById('ch-egr-line'), {
-    type: 'line',
-    data: { labels, datasets: [{ label: 'Egresos', data: keys.map(k => Math.abs(mapa[k].egresos)), borderColor: C.red, backgroundColor: C.redFill, fill: true, tension: 0.35, pointRadius: 4, pointBackgroundColor: C.red }] },
-    options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, tooltip: { callbacks: { label: ctx => `Egresos: ${ars(ctx.raw)}` } } } }
-  });
+    <div class="chart-card wide"><div class="chart-title">Ingresos vs Egresos</div><div class="chart-sub">Comparación por ${agrup==='dia'?'día':agrup==='semana'?'semana':'mes'}</div><div class="chart-wrap chart-wrap-tall"><canvas id="ch-ingegr"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Evolución de ingresos</div><div class="chart-sub">Línea de tendencia</div><div class="chart-wrap"><canvas id="ch-ing-line"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Evolución de egresos</div><div class="chart-sub">Línea de tendencia</div><div class="chart-wrap"><canvas id="ch-egr-line"></canvas></div></div>`;
+  chartInstances['ch-ingegr'] = new Chart(document.getElementById('ch-ingegr'), { type:'bar', data:{ labels, datasets:[{label:'Ingresos',data:keys.map(k=>mapa[k].ingresos),backgroundColor:C.greenFill,borderColor:C.green,borderWidth:2,borderRadius:4},{label:'Egresos',data:keys.map(k=>Math.abs(mapa[k].egresos)),backgroundColor:C.redFill,borderColor:C.red,borderWidth:2,borderRadius:4}]}, options:{...CHART_DEFAULTS,plugins:{...CHART_DEFAULTS.plugins,tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ars(ctx.raw)}`}}}}});
+  chartInstances['ch-ing-line'] = new Chart(document.getElementById('ch-ing-line'), { type:'line', data:{ labels, datasets:[{label:'Ingresos',data:keys.map(k=>mapa[k].ingresos),borderColor:C.green,backgroundColor:C.greenFill,fill:true,tension:0.35,pointRadius:4,pointBackgroundColor:C.green}]}, options:{...CHART_DEFAULTS}});
+  chartInstances['ch-egr-line'] = new Chart(document.getElementById('ch-egr-line'), { type:'line', data:{ labels, datasets:[{label:'Egresos',data:keys.map(k=>Math.abs(mapa[k].egresos)),borderColor:C.red,backgroundColor:C.redFill,fill:true,tension:0.35,pointRadius:4,pointBackgroundColor:C.red}]}, options:{...CHART_DEFAULTS}});
 }
 
-// ── 2. Ventas vs Pagos de clientes ───────────────────────
 function renderVentasCarga(grid, mapa, keys, labels) {
   grid.className = 'charts-grid';
   grid.innerHTML = `
-    <div class="chart-card wide">
-      <div class="chart-title">Ventas vs Pagos de clientes</div>
-      <div class="chart-sub">Composición del ingreso por período</div>
-      <div class="chart-wrap chart-wrap-tall"><canvas id="ch-vc-bar"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Proporción acumulada</div>
-      <div class="chart-sub">Ventas vs Carga de saldo — total del período</div>
-      <div class="chart-wrap"><canvas id="ch-vc-doughnut"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Tendencia de ventas</div>
-      <div class="chart-sub">Evolución de ventas diarias</div>
-      <div class="chart-wrap"><canvas id="ch-vc-line"></canvas></div>
-    </div>
-  `;
-
-  chartInstances['ch-vc-bar'] = new Chart(document.getElementById('ch-vc-bar'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Ventas',          data: keys.map(k => mapa[k].ventas), backgroundColor: C.blueFill,  borderColor: C.blue,  borderWidth: 2, borderRadius: 4 },
-        { label: 'Pagos clientes',  data: keys.map(k => mapa[k].carga),  backgroundColor: C.goldFill,  borderColor: C.gold,  borderWidth: 2, borderRadius: 4 },
-      ]
-    },
-    options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ars(ctx.raw)}` } } } }
-  });
-
-  const totVen = keys.reduce((a,k) => a + mapa[k].ventas, 0);
-  const totCar = keys.reduce((a,k) => a + mapa[k].carga,  0);
-  chartInstances['ch-vc-doughnut'] = new Chart(document.getElementById('ch-vc-doughnut'), {
-    type: 'doughnut',
-    data: {
-      labels: ['Ventas', 'Pagos clientes'],
-      datasets: [{ data: [totVen, totCar], backgroundColor: [C.blue, C.gold], borderColor: '#171b24', borderWidth: 3, hoverOffset: 6 }]
-    },
-    options: {
-      cutout: '62%', responsive: true, maintainAspectRatio: true, animation: { duration: 400 },
-      plugins: {
-        legend: { position: 'bottom', labels: { color: '#a0aac8', font: { size: 11 }, padding: 16 } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ars(ctx.raw)} (${(ctx.raw/(totVen+totCar)*100).toFixed(1)}%)` } }
-      }
-    }
-  });
-
-  chartInstances['ch-vc-line'] = new Chart(document.getElementById('ch-vc-line'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Ventas', data: keys.map(k => mapa[k].ventas), borderColor: C.blue, backgroundColor: C.blueFill, fill: true, tension: 0.35, pointRadius: 4, pointBackgroundColor: C.blue },
-        { label: 'Pagos',  data: keys.map(k => mapa[k].carga),  borderColor: C.gold, backgroundColor: C.goldFill, fill: false, tension: 0.35, pointRadius: 4, pointBackgroundColor: C.gold, borderDash: [5,3] },
-      ]
-    },
-    options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ars(ctx.raw)}` } } } }
-  });
+    <div class="chart-card wide"><div class="chart-title">Ventas vs Pagos de clientes</div><div class="chart-sub">Composición del ingreso por período</div><div class="chart-wrap chart-wrap-tall"><canvas id="ch-vc-bar"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Proporción acumulada</div><div class="chart-sub">Ventas vs Carga de saldo — total del período</div><div class="chart-wrap"><canvas id="ch-vc-doughnut"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Tendencia de ventas</div><div class="chart-sub">Evolución de ventas diarias</div><div class="chart-wrap"><canvas id="ch-vc-line"></canvas></div></div>`;
+  chartInstances['ch-vc-bar'] = new Chart(document.getElementById('ch-vc-bar'), { type:'bar', data:{ labels, datasets:[{label:'Ventas',data:keys.map(k=>mapa[k].ventas),backgroundColor:C.blueFill,borderColor:C.blue,borderWidth:2,borderRadius:4},{label:'Pagos clientes',data:keys.map(k=>mapa[k].carga),backgroundColor:C.goldFill,borderColor:C.gold,borderWidth:2,borderRadius:4}]}, options:{...CHART_DEFAULTS}});
+  const totVen = keys.reduce((a,k)=>a+mapa[k].ventas,0);
+  const totCar = keys.reduce((a,k)=>a+mapa[k].carga,0);
+  chartInstances['ch-vc-doughnut'] = new Chart(document.getElementById('ch-vc-doughnut'), { type:'doughnut', data:{ labels:['Ventas','Pagos clientes'], datasets:[{data:[totVen,totCar],backgroundColor:[C.blue,C.gold],borderColor:'#171b24',borderWidth:3,hoverOffset:6}]}, options:{cutout:'62%',responsive:true,maintainAspectRatio:true,animation:{duration:400},plugins:{legend:{position:'bottom',labels:{color:'#a0aac8',font:{size:11},padding:16}}}}});
+  chartInstances['ch-vc-line'] = new Chart(document.getElementById('ch-vc-line'), { type:'line', data:{ labels, datasets:[{label:'Ventas',data:keys.map(k=>mapa[k].ventas),borderColor:C.blue,backgroundColor:C.blueFill,fill:true,tension:0.35,pointRadius:4},{label:'Pagos',data:keys.map(k=>mapa[k].carga),borderColor:C.gold,backgroundColor:C.goldFill,fill:false,tension:0.35,pointRadius:4,borderDash:[5,3]}]}, options:{...CHART_DEFAULTS}});
 }
 
-// ── 3. Neto por período ──────────────────────────────────
 function renderNeto(grid, mapa, keys, labels) {
   grid.className = 'charts-grid full';
   grid.innerHTML = `
-    <div class="chart-card wide">
-      <div class="chart-title">Neto del período</div>
-      <div class="chart-sub">Resultado neto por período (ingresos − egresos)</div>
-      <div class="chart-wrap chart-wrap-tall"><canvas id="ch-neto-bar"></canvas></div>
-    </div>
-    <div class="chart-card wide">
-      <div class="chart-title">Neto acumulado</div>
-      <div class="chart-sub">Suma acumulada a lo largo del período</div>
-      <div class="chart-wrap"><canvas id="ch-neto-acum"></canvas></div>
-    </div>
-  `;
-
-  const netos = keys.map(k => mapa[k].neto);
-  const bgColors = netos.map(v => v >= 0 ? C.greenFill : C.redFill);
-  const bdColors = netos.map(v => v >= 0 ? C.green : C.red);
-
-  chartInstances['ch-neto-bar'] = new Chart(document.getElementById('ch-neto-bar'), {
-    type: 'bar',
-    data: { labels, datasets: [{ label: 'Neto', data: netos, backgroundColor: bgColors, borderColor: bdColors, borderWidth: 2, borderRadius: 4 }] },
-    options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, tooltip: { callbacks: { label: ctx => `Neto: ${ars(ctx.raw)}` } } } }
-  });
-
-  let acum = 0;
-  const acumData = keys.map(k => { acum += mapa[k].neto; return acum; });
-  const acumColors = acumData.map(v => v >= 0 ? C.green : C.red);
-  chartInstances['ch-neto-acum'] = new Chart(document.getElementById('ch-neto-acum'), {
-    type: 'line',
-    data: { labels, datasets: [{
-      label: 'Neto acumulado', data: acumData,
-      borderColor: C.blue, backgroundColor: C.blueFill, fill: true, tension: 0.3,
-      pointRadius: 5, pointBackgroundColor: acumColors, pointBorderColor: acumColors,
-    }]},
-    options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, tooltip: { callbacks: { label: ctx => `Acumulado: ${ars(ctx.raw)}` } } } }
-  });
+    <div class="chart-card wide"><div class="chart-title">Neto del período</div><div class="chart-sub">Resultado neto por período</div><div class="chart-wrap chart-wrap-tall"><canvas id="ch-neto-bar"></canvas></div></div>
+    <div class="chart-card wide"><div class="chart-title">Neto acumulado</div><div class="chart-sub">Suma acumulada a lo largo del período</div><div class="chart-wrap"><canvas id="ch-neto-acum"></canvas></div></div>`;
+  const netos = keys.map(k=>mapa[k].neto);
+  chartInstances['ch-neto-bar'] = new Chart(document.getElementById('ch-neto-bar'), { type:'bar', data:{ labels, datasets:[{label:'Neto',data:netos,backgroundColor:netos.map(v=>v>=0?C.greenFill:C.redFill),borderColor:netos.map(v=>v>=0?C.green:C.red),borderWidth:2,borderRadius:4}]}, options:{...CHART_DEFAULTS}});
+  let acum=0; const acumData=keys.map(k=>{acum+=mapa[k].neto;return acum;});
+  chartInstances['ch-neto-acum'] = new Chart(document.getElementById('ch-neto-acum'), { type:'line', data:{ labels, datasets:[{label:'Neto acumulado',data:acumData,borderColor:C.blue,backgroundColor:C.blueFill,fill:true,tension:0.3,pointRadius:5,pointBackgroundColor:acumData.map(v=>v>=0?C.green:C.red)}]}, options:{...CHART_DEFAULTS}});
 }
 
-// ── 4. Por cuenta ────────────────────────────────────────
 function renderPorCuenta(grid, agrup) {
   const { mapa, keys } = buildSeriesTemporal(agrup);
   const labels = keys.map(k => fmtKey(k, agrup));
-
-  // Obtener cuentas activas (con movimientos)
   const cuentasSet = new Set();
   state.cuentas.forEach(c => { if (c.movs.some(m => !m.esInterno)) cuentasSet.add(c.nombre); });
   const cuentas = [...cuentasSet].filter(n => n.toUpperCase() !== 'DEBIN');
 
-  // Neto por cuenta por período
   const netosPorCuenta = {};
   state.cuentas.forEach(c => {
     if (!cuentas.includes(c.nombre)) return;
@@ -1716,91 +1487,25 @@ function renderPorCuenta(grid, agrup) {
     c.movs.forEach(m => {
       if (m.esInterno || !m.fechaStr) return;
       let k;
-      if (agrup === 'dia') k = m.fechaStr;
-      else if (agrup === 'semana') k = isoWeek(m.fechaStr);
-      else k = m.fechaStr.slice(0,7);
-      if (netosPorCuenta[c.nombre][k] !== undefined) netosPorCuenta[c.nombre][k] += m.importe;
+      if (agrup==='dia') k=m.fechaStr;
+      else if (agrup==='semana') k=isoWeek(m.fechaStr);
+      else k=m.fechaStr.slice(0,7);
+      if (netosPorCuenta[c.nombre][k]!==undefined) netosPorCuenta[c.nombre][k]+=m.importe;
     });
   });
 
-  // Total neto por cuenta (para el ranking)
-  const totalesCuenta = cuentas.map(n => ({
-    nombre: n,
-    total: Object.values(netosPorCuenta[n] || {}).reduce((a,v) => a+v, 0)
-  })).sort((a,b) => b.total - a.total);
+  const totalesCuenta = cuentas.map(n=>({nombre:n,total:Object.values(netosPorCuenta[n]||{}).reduce((a,v)=>a+v,0)})).sort((a,b)=>b.total-a.total);
 
   grid.className = 'charts-grid';
   grid.innerHTML = `
-    <div class="chart-card wide">
-      <div class="chart-title">Neto por cuenta — evolución</div>
-      <div class="chart-sub">Cada línea representa un medio de pago</div>
-      <div class="chart-wrap chart-wrap-tall"><canvas id="ch-cta-line"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Ranking de cuentas</div>
-      <div class="chart-sub">Total neto en el período seleccionado</div>
-      <div class="chart-wrap chart-wrap-tall"><canvas id="ch-cta-rank"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Participación de cada cuenta</div>
-      <div class="chart-sub">% sobre el total de ingresos</div>
-      <div class="chart-wrap"><canvas id="ch-cta-pie"></canvas></div>
-    </div>
-  `;
+    <div class="chart-card wide"><div class="chart-title">Neto por cuenta — evolución</div><div class="chart-sub">Cada línea representa un medio de pago</div><div class="chart-wrap chart-wrap-tall"><canvas id="ch-cta-line"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Ranking de cuentas</div><div class="chart-sub">Total neto en el período</div><div class="chart-wrap chart-wrap-tall"><canvas id="ch-cta-rank"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Participación de cada cuenta</div><div class="chart-sub">% sobre el total de ingresos</div><div class="chart-wrap"><canvas id="ch-cta-pie"></canvas></div></div>`;
 
-  // Línea por cuenta
-  const datasetsLine = cuentas.map((n, i) => ({
-    label: n,
-    data: keys.map(k => netosPorCuenta[n][k] || 0),
-    borderColor: PALETTE[i % PALETTE.length],
-    backgroundColor: 'transparent',
-    tension: 0.35, pointRadius: 3, borderWidth: 2,
-  }));
-  chartInstances['ch-cta-line'] = new Chart(document.getElementById('ch-cta-line'), {
-    type: 'line', data: { labels, datasets: datasetsLine },
-    options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ars(ctx.raw)}` } } } }
-  });
-
-  // Ranking barras horizontales
-  chartInstances['ch-cta-rank'] = new Chart(document.getElementById('ch-cta-rank'), {
-    type: 'bar',
-    data: {
-      labels: totalesCuenta.map(t => t.nombre),
-      datasets: [{
-        label: 'Neto total',
-        data: totalesCuenta.map(t => t.total),
-        backgroundColor: totalesCuenta.map(t => t.total >= 0 ? C.greenFill : C.redFill),
-        borderColor:     totalesCuenta.map(t => t.total >= 0 ? C.green : C.red),
-        borderWidth: 2, borderRadius: 4,
-      }]
-    },
-    options: { ...CHART_DEFAULTS, indexAxis: 'y',
-      plugins: { ...CHART_DEFAULTS.plugins, legend: { display: false }, tooltip: { callbacks: { label: ctx => `Neto: ${ars(ctx.raw)}` } } },
-      scales: { x: CHART_DEFAULTS.scales.x, y: { ticks: { color: '#a0aac8', font: { size: 11 } }, grid: { color: 'rgba(43,49,71,0.4)' } } }
-    }
-  });
-
-  // Pie de participación en ingresos
-  const ingPorCuenta = cuentas.map(n => {
-    let sum = 0;
-    state.cuentas.find(c => c.nombre === n)?.movs.forEach(m => { if (!m.esInterno && m.importe > 0) sum += m.importe; });
-    return { nombre: n, ing: sum };
-  }).filter(x => x.ing > 0).sort((a,b) => b.ing - a.ing);
-
-  chartInstances['ch-cta-pie'] = new Chart(document.getElementById('ch-cta-pie'), {
-    type: 'doughnut',
-    data: {
-      labels: ingPorCuenta.map(x => x.nombre),
-      datasets: [{ data: ingPorCuenta.map(x => x.ing), backgroundColor: PALETTE.map(c => c + 'cc'), borderColor: '#171b24', borderWidth: 2, hoverOffset: 6 }]
-    },
-    options: {
-      cutout: '55%', responsive: true, maintainAspectRatio: true, animation: { duration: 400 },
-      plugins: {
-        legend: { position: 'right', labels: { color: '#a0aac8', font: { size: 10 }, padding: 10, boxWidth: 10 } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ars(ctx.raw)}` } }
-      }
-    }
-  });
+  chartInstances['ch-cta-line'] = new Chart(document.getElementById('ch-cta-line'), { type:'line', data:{ labels, datasets:cuentas.map((n,i)=>({label:n,data:keys.map(k=>netosPorCuenta[n][k]||0),borderColor:PALETTE[i%PALETTE.length],backgroundColor:'transparent',tension:0.35,pointRadius:3,borderWidth:2}))}, options:{...CHART_DEFAULTS}});
+  chartInstances['ch-cta-rank'] = new Chart(document.getElementById('ch-cta-rank'), { type:'bar', data:{ labels:totalesCuenta.map(t=>t.nombre), datasets:[{label:'Neto total',data:totalesCuenta.map(t=>t.total),backgroundColor:totalesCuenta.map(t=>t.total>=0?C.greenFill:C.redFill),borderColor:totalesCuenta.map(t=>t.total>=0?C.green:C.red),borderWidth:2,borderRadius:4}]}, options:{...CHART_DEFAULTS,indexAxis:'y',plugins:{...CHART_DEFAULTS.plugins,legend:{display:false}},scales:{x:CHART_DEFAULTS.scales.x,y:{ticks:{color:'#a0aac8',font:{size:11}},grid:{color:'rgba(43,49,71,0.4)'}}}}});
+  const ingPorCuenta = cuentas.map(n=>{let sum=0;state.cuentas.find(c=>c.nombre===n)?.movs.forEach(m=>{if(!m.esInterno&&m.importe>0)sum+=m.importe;});return{nombre:n,ing:sum};}).filter(x=>x.ing>0).sort((a,b)=>b.ing-a.ing);
+  chartInstances['ch-cta-pie'] = new Chart(document.getElementById('ch-cta-pie'), { type:'doughnut', data:{ labels:ingPorCuenta.map(x=>x.nombre), datasets:[{data:ingPorCuenta.map(x=>x.ing),backgroundColor:PALETTE.map(c=>c+'cc'),borderColor:'#171b24',borderWidth:2,hoverOffset:6}]}, options:{cutout:'55%',responsive:true,maintainAspectRatio:true,animation:{duration:400},plugins:{legend:{position:'right',labels:{color:'#a0aac8',font:{size:10},padding:10,boxWidth:10}}}}});
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1815,110 +1520,22 @@ function generarPDF() {
   const btn = document.getElementById('btn-gen-pdf');
   btn.textContent = '⏳ Generando...';
   btn.disabled = true;
-
   try {
     const titulo   = document.getElementById('pdf-toolbar-title').textContent;
     const bodyHTML = document.getElementById('pdf-body').innerHTML;
-    const fechaGen = new Date().toLocaleString('es-AR', {
-      day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'
-    });
-
-    // HTML completo autocontenido con instrucciones de impresión
-    const printHTML = `<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<title>Flujo de Caja — ${titulo}</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Inter,Arial,sans-serif;font-size:13px;color:#111;background:#fff}
-.instrucciones{background:#1e2333;color:#e2e8f8;padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.instrucciones strong{font-size:13px;font-weight:700;flex:1}
-.instrucciones ol{font-size:12px;color:#a0aac8;display:flex;gap:20px;list-style:none}
-.instrucciones ol li::before{content:counter(step) ". ";counter-increment:step;color:#4f8ef7;font-weight:700}
-.instrucciones ol{counter-reset:step}
-.btn-imp{background:#4f8ef7;color:#fff;border:none;padding:9px 20px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer}
-.btn-imp:hover{background:#3a7de8}
-.pdf-body{max-width:900px;margin:0 auto;padding:28px 36px 56px}
-.pdf-logo{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#4f8ef7;margin-bottom:6px}
-.pdf-title{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
-.pdf-subtitle{font-size:12px;color:#555}
-.pdf-fecha{font-size:11px;color:#888;margin-top:3px}
-.pdf-header{margin-bottom:24px;border-bottom:2px solid #111;padding-bottom:14px}
-.pdf-section{margin-top:24px}
-.pdf-section-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#6b7280;border-bottom:1px solid #e5e7eb;padding-bottom:5px;margin-bottom:12px}
-.pdf-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.pdf-stat{border:1px solid #e5e7eb;border-radius:7px;padding:12px 14px;background:#f9fafb}
-.pdf-stat-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:5px}
-.pdf-stat-val{font-size:18px;font-weight:800;letter-spacing:-.5px;font-family:'Roboto Mono',monospace}
-.pdf-stat-sub{font-size:10px;color:#9ca3af;margin-top:2px}
-.pdf-green{color:#059669}.pdf-red{color:#dc2626}.pdf-blue{color:#2563eb}.pdf-gold{color:#d97706}
-.pdf-saldo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
-.pdf-saldo-item{border:1px solid #e5e7eb;border-radius:6px;padding:9px 12px}
-.pdf-saldo-name{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin-bottom:3px}
-.pdf-saldo-val{font-size:13px;font-weight:700;font-family:monospace}
-.pdf-saldo-total{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:9px 14px;margin-top:5px}
-.pdf-saldo-total.neg{background:#fef2f2;border-color:#fecaca}
-.pdf-saldo-total span:first-child{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280}
-.pdf-saldo-total span:last-child{font-size:17px;font-weight:800;font-family:monospace}
-.pdf-egresos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.pdf-egr-item{border:1px solid #fee2e2;border-radius:6px;padding:9px 12px;background:#fff5f5}
-.pdf-egr-cat{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#dc2626;margin-bottom:3px}
-.pdf-egr-val{font-size:13px;font-weight:700;color:#dc2626;font-family:monospace}
-.pdf-egr-cnt{font-size:10px;color:#9ca3af;margin-top:2px}
-.pdf-table{width:100%;border-collapse:collapse;font-size:11px}
-.pdf-table thead th{background:#1e2333;color:#e2e8f8;padding:8px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px}
-.pdf-table thead th.r{text-align:right}
-.pdf-table tbody td{padding:8px 10px;border-bottom:1px solid #f3f4f6}
-.pdf-table tbody tr:nth-child(even) td{background:#f9fafb}
-.td-r{text-align:right;font-family:monospace;font-weight:600}
-.td-green{color:#059669}.td-red{color:#dc2626}
-.pdf-total-row td{background:#1e2333!important;color:#e2e8f8!important;font-weight:700}
-.pdf-total-row .td-green{color:#34d399!important}
-.pdf-total-row .td-red{color:#f87171!important}
-.pdf-footer{margin-top:32px;padding-top:10px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:10px;color:#9ca3af}
-@media print{
-  .instrucciones{display:none!important}
-  body{font-size:11px}
-  .pdf-body{padding:0}
-  .pdf-stat-val{font-size:15px}
-  @page{margin:10mm 8mm;size:A4}
-}
-</style>
-</head>
-<body>
-<div class="instrucciones">
-  <strong>📄 Reporte listo — ${titulo}</strong>
-  <ol>
-    <li>Hacer clic en "Imprimir"</li>
-    <li>Destino → "Guardar como PDF"</li>
-    <li>Guardar</li>
-  </ol>
-  <button class="btn-imp" onclick="window.print()">🖨 Imprimir / Guardar PDF</button>
-</div>
-<div class="pdf-body">${bodyHTML}</div>
-</body>
-</html>`;
-
-    // Descargar como archivo .html — funciona 100% dentro del iframe
-    const blob = new Blob([printHTML], { type: 'text/html;charset=utf-8' });
+    const fechaGen = new Date().toLocaleString('es-AR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    const printHTML = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Flujo de Caja — ${titulo}</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,Arial,sans-serif;font-size:13px;color:#111;background:#fff}.instrucciones{background:#1e2333;color:#e2e8f8;padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}.instrucciones strong{font-size:13px;font-weight:700;flex:1}.btn-imp{background:#4f8ef7;color:#fff;border:none;padding:9px 20px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer}.pdf-body{max-width:900px;margin:0 auto;padding:28px 36px 56px}.pdf-logo{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#4f8ef7;margin-bottom:6px}.pdf-title{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}.pdf-subtitle{font-size:12px;color:#555}.pdf-fecha{font-size:11px;color:#888;margin-top:3px}.pdf-header{margin-bottom:24px;border-bottom:2px solid #111;padding-bottom:14px}.pdf-section{margin-top:24px}.pdf-section-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#6b7280;border-bottom:1px solid #e5e7eb;padding-bottom:5px;margin-bottom:12px}.pdf-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.pdf-stat{border:1px solid #e5e7eb;border-radius:7px;padding:12px 14px;background:#f9fafb}.pdf-stat-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:5px}.pdf-stat-val{font-size:18px;font-weight:800;letter-spacing:-.5px;font-family:'Roboto Mono',monospace}.pdf-stat-sub{font-size:10px;color:#9ca3af;margin-top:2px}.pdf-green{color:#059669}.pdf-red{color:#dc2626}.pdf-blue{color:#2563eb}.pdf-gold{color:#d97706}.pdf-saldo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}.pdf-saldo-item{border:1px solid #e5e7eb;border-radius:6px;padding:9px 12px}.pdf-saldo-name{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin-bottom:3px}.pdf-saldo-val{font-size:13px;font-weight:700;font-family:monospace}.pdf-saldo-total{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:9px 14px;margin-top:5px}.pdf-saldo-total.neg{background:#fef2f2;border-color:#fecaca}.pdf-saldo-total span:first-child{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280}.pdf-saldo-total span:last-child{font-size:17px;font-weight:800;font-family:monospace}.pdf-egresos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.pdf-egr-item{border:1px solid #fee2e2;border-radius:6px;padding:9px 12px;background:#fff5f5}.pdf-egr-cat{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#dc2626;margin-bottom:3px}.pdf-egr-val{font-size:13px;font-weight:700;color:#dc2626;font-family:monospace}.pdf-egr-cnt{font-size:10px;color:#9ca3af;margin-top:2px}.pdf-table{width:100%;border-collapse:collapse;font-size:11px}.pdf-table thead th{background:#1e2333;color:#e2e8f8;padding:8px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px}.pdf-table thead th.r{text-align:right}.pdf-table tbody td{padding:8px 10px;border-bottom:1px solid #f3f4f6}.pdf-table tbody tr:nth-child(even) td{background:#f9fafb}.td-r{text-align:right;font-family:monospace;font-weight:600}.td-green{color:#059669}.td-red{color:#dc2626}.pdf-total-row td{background:#1e2333!important;color:#e2e8f8!important;font-weight:700}.pdf-total-row .td-green{color:#34d399!important}.pdf-total-row .td-red{color:#f87171!important}.pdf-footer{margin-top:32px;padding-top:10px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:10px;color:#9ca3af}@media print{.instrucciones{display:none!important}body{font-size:11px}.pdf-body{padding:0}@page{margin:10mm 8mm;size:A4}}</style></head><body><div class="instrucciones"><strong>📄 Reporte listo — ${titulo}</strong><button class="btn-imp" onclick="window.print()">🖨 Imprimir / Guardar PDF</button></div><div class="pdf-body">${bodyHTML}</div></body></html>`;
+    const blob = new Blob([printHTML], { type:'text/html;charset=utf-8' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
-    a.href     = url;
-    a.download = `flujo_caja_${new Date().toISOString().slice(0,10)}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-
+    a.href=url; a.download=`flujo_caja_${new Date().toISOString().slice(0,10)}.html`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
   } catch(err) {
     alert('Error al generar el archivo: ' + err.message);
-    console.error(err);
   } finally {
-    btn.textContent = '⬇ Descargar PDF';
-    btn.disabled    = false;
+    btn.textContent = '⬇ Descargar para imprimir';
+    btn.disabled = false;
   }
 }
 
@@ -1926,7 +1543,6 @@ function exportarPDF() {
   if (!state) return;
   const { cuentas, excluidas } = state;
 
-  // Construir datos filtrados (igual que render)
   const activas = cuentas.map(c => {
     const movs = filtrarMovs(c.movs);
     const movsReales = movs.filter(m => !m.esInterno);
@@ -1946,152 +1562,57 @@ function exportarPDF() {
   const totalCarga    = movsGlobal.filter(m => m.categoria.toLowerCase().includes('carga de saldo') && m.importe > 0).reduce((a,m) => a+m.importe, 0);
   const totalMovs     = activas.reduce((a,c) => a+c.movsReales.length, 0);
 
-  // Egresos por categoría — separar operativos de anulaciones
-  const egresosCats = {};
+  // catList local para el PDF — FIX Bug 2
+  const egresosCatsPDF = {};
   activas.forEach(c => {
     c.movs.filter(m => !m.esInterno && m.importe < 0 && !m.esAnulacion).forEach(m => {
       const cat = m.categoria || 'Otros egresos';
-      if (!egresosCats[cat]) egresosCats[cat] = { total:0, count:0, esAnulacion:false };
-      egresosCats[cat].total += m.importe;
-      egresosCats[cat].count++;
+      if (!egresosCatsPDF[cat]) egresosCatsPDF[cat] = { total:0, count:0 };
+      egresosCatsPDF[cat].total += m.importe;
+      egresosCatsPDF[cat].count++;
     });
   });
-  // anuList ya declarado arriba
+  const catListPDF = Object.entries(egresosCatsPDF).sort((a,b) => a[1].total - b[1].total);
 
-  // Cuentas principales
   const cuentasPpal = activas.filter(c =>
     CUENTAS_PPAL.some(k => norm(c.nombre).includes(norm(k)))
   ).sort((a,b) => b.neto - a.neto);
   const saldoCombinado = cuentasPpal.reduce((a,c) => a+c.neto, 0);
-
-  // Ordenar cuentas
   const sorted = [...activas].sort((a,b) => b.neto - a.neto);
   const periodoLabel = getPeriodoLabel();
-  const fechaGen = new Date().toLocaleString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  const fechaGen = new Date().toLocaleString('es-AR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
 
-  // ── Construir HTML del PDF ──
   let html = `
-    <!-- HEADER -->
     <div class="pdf-header">
       <div class="pdf-logo">📊 Flujo de Caja — Reporte Financiero</div>
       <div class="pdf-title">${esc(periodoLabel)}</div>
-      <div class="pdf-subtitle">${activas.length} medios de pago · ${totalMovs} movimientos${excluidas.length ? ' · Hoja DEBIN excluida' : ''}</div>
+      <div class="pdf-subtitle">${activas.length} medios de pago · ${totalMovs} movimientos${excluidas.length?' · Hoja DEBIN excluida':''}</div>
       <div class="pdf-fecha">Generado el ${fechaGen}</div>
     </div>
-
-    <!-- STATS PRINCIPALES -->
     <div class="pdf-section">
       <div class="pdf-section-title">Resumen del período</div>
       <div class="pdf-stats">
-        <div class="pdf-stat">
-          <div class="pdf-stat-lbl">Total ingresos</div>
-          <div class="pdf-stat-val pdf-green">${ars(totalIngresos)}</div>
-          <div class="pdf-stat-sub">Entradas del período</div>
-        </div>
-        <div class="pdf-stat">
-          <div class="pdf-stat-lbl">Total egresos</div>
-          <div class="pdf-stat-val pdf-red">${ars(Math.abs(totalEgresos))}</div>
-          <div class="pdf-stat-sub">${catList.length} categoría${catList.length!==1?'s':''}</div>
-        </div>
-        <div class="pdf-stat" style="background:${totalNeto>=0?'#f0fdf4':'#fef2f2'};border-color:${totalNeto>=0?'#bbf7d0':'#fecaca'}">
-          <div class="pdf-stat-lbl">Neto del período</div>
-          <div class="pdf-stat-val ${totalNeto>=0?'pdf-green':'pdf-red'}">${ars(totalNeto)}</div>
-          <div class="pdf-stat-sub">${totalNeto>=0?'Resultado positivo':'Resultado negativo'}</div>
-        </div>
-        <div class="pdf-stat">
-          <div class="pdf-stat-lbl">Ventas</div>
-          <div class="pdf-stat-val pdf-blue">${ars(totalVentas)}</div>
-          <div class="pdf-stat-sub">${pct(totalVentas, totalIngresos)} del total</div>
-        </div>
-        <div class="pdf-stat">
-          <div class="pdf-stat-lbl">Pagos de clientes</div>
-          <div class="pdf-stat-val pdf-gold">${ars(totalCarga)}</div>
-          <div class="pdf-stat-sub">${pct(totalCarga, totalIngresos)} del total</div>
-        </div>
-        <div class="pdf-stat">
-          <div class="pdf-stat-lbl">Movimientos</div>
-          <div class="pdf-stat-val" style="color:#374151">${totalMovs}</div>
-          <div class="pdf-stat-sub">${activas.length} cuentas activas</div>
-        </div>
+        <div class="pdf-stat"><div class="pdf-stat-lbl">Total ingresos</div><div class="pdf-stat-val pdf-green">${ars(totalIngresos)}</div><div class="pdf-stat-sub">Entradas del período</div></div>
+        <div class="pdf-stat"><div class="pdf-stat-lbl">Total egresos</div><div class="pdf-stat-val pdf-red">${ars(Math.abs(totalEgresos))}</div><div class="pdf-stat-sub">${catListPDF.length} categoría${catListPDF.length!==1?'s':''}</div></div>
+        <div class="pdf-stat" style="background:${totalNeto>=0?'#f0fdf4':'#fef2f2'};border-color:${totalNeto>=0?'#bbf7d0':'#fecaca'}"><div class="pdf-stat-lbl">Neto del período</div><div class="pdf-stat-val ${totalNeto>=0?'pdf-green':'pdf-red'}">${ars(totalNeto)}</div><div class="pdf-stat-sub">${totalNeto>=0?'Resultado positivo':'Resultado negativo'}</div></div>
+        <div class="pdf-stat"><div class="pdf-stat-lbl">Ventas</div><div class="pdf-stat-val pdf-blue">${ars(totalVentas)}</div><div class="pdf-stat-sub">${pct(totalVentas,totalIngresos)} del total</div></div>
+        <div class="pdf-stat"><div class="pdf-stat-lbl">Pagos de clientes</div><div class="pdf-stat-val pdf-gold">${ars(totalCarga)}</div><div class="pdf-stat-sub">${pct(totalCarga,totalIngresos)} del total</div></div>
+        <div class="pdf-stat"><div class="pdf-stat-lbl">Movimientos</div><div class="pdf-stat-val" style="color:#374151">${totalMovs}</div><div class="pdf-stat-sub">${activas.length} cuentas activas</div></div>
       </div>
     </div>
-
-    <!-- EGRESOS POR CATEGORÍA -->
-    ${catList.length > 0 ? `
-    <div class="pdf-section">
-      <div class="pdf-section-title">Detalle de egresos por categoría</div>
-      <div class="pdf-egresos-grid">
-        ${catList.map(([cat, d]) => `
-          <div class="pdf-egr-item">
-            <div class="pdf-egr-cat">${esc(cat)}</div>
-            <div class="pdf-egr-val">− ${ars(Math.abs(d.total))}</div>
-            <div class="pdf-egr-cnt">${d.count} mov · ${pct(Math.abs(d.total), Math.abs(totalEgresos))}</div>
-          </div>`).join('')}
-      </div>
-    </div>` : ''}
-
-    <!-- SALDO CUENTAS PRINCIPALES -->
-    ${cuentasPpal.length > 0 ? `
-    <div class="pdf-section">
-      <div class="pdf-section-title">★ Saldo neto — cuentas principales</div>
-      <div class="pdf-saldo-grid">
-        ${cuentasPpal.map(c => `
-          <div class="pdf-saldo-item">
-            <div class="pdf-saldo-name">${esc(c.nombre)}</div>
-            <div class="pdf-saldo-val ${c.neto>=0?'pdf-green':'pdf-red'}">${ars(c.neto)}</div>
-          </div>`).join('')}
-      </div>
-      <div class="pdf-saldo-total ${saldoCombinado<0?'neg':''}">
-        <span>Total cuentas principales</span>
-        <span class="${saldoCombinado>=0?'pdf-green':'pdf-red'}">${ars(saldoCombinado)}</span>
-      </div>
-    </div>` : ''}
-
-    <!-- TABLA DE CUENTAS -->
+    ${catListPDF.length>0?`<div class="pdf-section"><div class="pdf-section-title">Detalle de egresos por categoría</div><div class="pdf-egresos-grid">${catListPDF.map(([cat,d])=>`<div class="pdf-egr-item"><div class="pdf-egr-cat">${esc(cat)}</div><div class="pdf-egr-val">− ${ars(Math.abs(d.total))}</div><div class="pdf-egr-cnt">${d.count} mov · ${pct(Math.abs(d.total),Math.abs(totalEgresos))}</div></div>`).join('')}</div></div>`:''}
+    ${cuentasPpal.length>0?`<div class="pdf-section"><div class="pdf-section-title">★ Saldo neto — cuentas principales</div><div class="pdf-saldo-grid">${cuentasPpal.map(c=>`<div class="pdf-saldo-item"><div class="pdf-saldo-name">${esc(c.nombre)}</div><div class="pdf-saldo-val ${c.neto>=0?'pdf-green':'pdf-red'}">${ars(c.neto)}</div></div>`).join('')}</div><div class="pdf-saldo-total ${saldoCombinado<0?'neg':''}"><span>Total cuentas principales</span><span class="${saldoCombinado>=0?'pdf-green':'pdf-red'}">${ars(saldoCombinado)}</span></div></div>`:''}
     <div class="pdf-section">
       <div class="pdf-section-title">Resumen por medio de pago</div>
       <table class="pdf-table">
-        <thead>
-          <tr>
-            <th>Cuenta / Medio de pago</th>
-            <th class="r">Ingresos</th>
-            <th class="r">Egresos</th>
-            <th class="r">Ventas</th>
-            <th class="r">Pagos clientes</th>
-            <th class="r">Neto</th>
-            <th class="r">Mov.</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Cuenta / Medio de pago</th><th class="r">Ingresos</th><th class="r">Egresos</th><th class="r">Ventas</th><th class="r">Pagos clientes</th><th class="r">Neto</th><th class="r">Mov.</th></tr></thead>
         <tbody>
-          ${sorted.map(c => `
-            <tr>
-              <td><strong>${esc(c.nombre)}</strong></td>
-              <td class="td-r td-green">${ars(c.ingresos)}</td>
-              <td class="td-r td-red">${ars(Math.abs(c.egresos))}</td>
-              <td class="td-r">${c.ventas > 0 ? ars(c.ventas) : '<span style="color:#d1d5db">—</span>'}</td>
-              <td class="td-r">${c.cargaSaldo > 0 ? ars(c.cargaSaldo) : '<span style="color:#d1d5db">—</span>'}</td>
-              <td class="td-r ${c.neto>=0?'td-green':'td-red'}">${ars(c.neto)}</td>
-              <td class="td-r" style="color:#6b7280">${c.movsReales.length}</td>
-            </tr>`).join('')}
-          <tr class="pdf-total-row">
-            <td><strong>TOTALES</strong></td>
-            <td class="td-r td-green"><strong>${ars(totalIngresos)}</strong></td>
-            <td class="td-r td-red"><strong>${ars(Math.abs(totalEgresos))}</strong></td>
-            <td class="td-r"><strong>${ars(totalVentas)}</strong></td>
-            <td class="td-r"><strong>${ars(totalCarga)}</strong></td>
-            <td class="td-r ${totalNeto>=0?'td-green':'td-red'}"><strong>${ars(totalNeto)}</strong></td>
-            <td class="td-r"><strong>${totalMovs}</strong></td>
-          </tr>
+          ${sorted.map(c=>`<tr><td><strong>${esc(c.nombre)}</strong></td><td class="td-r td-green">${ars(c.ingresos)}</td><td class="td-r td-red">${ars(Math.abs(c.egresos))}</td><td class="td-r">${c.ventas>0?ars(c.ventas):'<span style="color:#d1d5db">—</span>'}</td><td class="td-r">${c.cargaSaldo>0?ars(c.cargaSaldo):'<span style="color:#d1d5db">—</span>'}</td><td class="td-r ${c.neto>=0?'td-green':'td-red'}">${ars(c.neto)}</td><td class="td-r" style="color:#6b7280">${c.movsReales.length}</td></tr>`).join('')}
+          <tr class="pdf-total-row"><td><strong>TOTALES</strong></td><td class="td-r td-green"><strong>${ars(totalIngresos)}</strong></td><td class="td-r td-red"><strong>${ars(Math.abs(totalEgresos))}</strong></td><td class="td-r"><strong>${ars(totalVentas)}</strong></td><td class="td-r"><strong>${ars(totalCarga)}</strong></td><td class="td-r ${totalNeto>=0?'td-green':'td-red'}"><strong>${ars(totalNeto)}</strong></td><td class="td-r"><strong>${totalMovs}</strong></td></tr>
         </tbody>
       </table>
     </div>
-
-    <!-- FOOTER -->
-    <div class="pdf-footer">
-      <span>Flujo de Caja Diario — ${esc(periodoLabel)}</span>
-      <span>Generado: ${fechaGen}</span>
-    </div>
-  `;
+    <div class="pdf-footer"><span>Flujo de Caja Diario — ${esc(periodoLabel)}</span><span>Generado: ${fechaGen}</span></div>`;
 
   document.getElementById('pdf-toolbar-title').textContent = periodoLabel;
   document.getElementById('pdf-body').innerHTML = html;
@@ -2106,11 +1627,7 @@ function exportarPDF() {
 async function cargarHistorial() {
   if (!sbClient) { mostrarSetupBanner(); return; }
   try {
-    const { data, error } = await sbClient
-      .from('periodos')
-      .select('*')
-      .order('fecha_subida', { ascending: false })
-      .limit(20);
+    const { data, error } = await sbClient.from('periodos').select('*').order('fecha_subida',{ascending:false}).limit(20);
     if (error) throw error;
     historial = data || [];
     renderHistorial();
@@ -2123,8 +1640,6 @@ async function cargarHistorial() {
 async function guardarPeriodo() {
   if (!sbClient || !state) return;
   const { cuentas, excluidas, fechas } = state;
-
-  // Calcular resumen para guardar
   const activas = cuentas.map(c => {
     const movsReales = c.movs.filter(m => !m.esInterno);
     const ingresos = movsReales.filter(m=>m.importe>0).reduce((a,m)=>a+m.importe,0);
@@ -2132,43 +1647,29 @@ async function guardarPeriodo() {
     const ventas   = movsReales.filter(m=>m.categoria.toLowerCase()==='venta'&&m.importe>0).reduce((a,m)=>a+m.importe,0);
     const carga    = movsReales.filter(m=>m.categoria.toLowerCase().includes('carga de saldo')&&m.importe>0).reduce((a,m)=>a+m.importe,0);
     const egresosCats = {};
-    movsReales.filter(m=>m.importe<0).forEach(m=>{
-      const cat = m.categoria||'Otros egresos';
-      egresosCats[cat] = (egresosCats[cat]||0) + m.importe;
-    });
+    movsReales.filter(m=>m.importe<0).forEach(m=>{ const cat=m.categoria||'Otros egresos'; egresosCats[cat]=(egresosCats[cat]||0)+m.importe; });
     return { nombre:c.nombre, ingresos, egresos, neto:ingresos+egresos, ventas, cargaSaldo:carga, movimientos:movsReales.length, egresosCats };
   }).filter(c=>c.movimientos>0);
 
-  const movsGlobal = activas.flatMap(c => {
-    const cuenta = cuentas.find(x=>x.nombre===c.nombre);
-    return cuenta ? cuenta.movs.filter(m=>!m.esInterno) : [];
-  });
+  const movsGlobal = activas.flatMap(c=>{const cuenta=cuentas.find(x=>x.nombre===c.nombre);return cuenta?cuenta.movs.filter(m=>!m.esInterno):[];});
   const totalIngresos = movsGlobal.filter(m=>m.importe>0).reduce((a,m)=>a+m.importe,0);
   const totalEgresos  = movsGlobal.filter(m=>m.importe<0).reduce((a,m)=>a+m.importe,0);
 
   const registro = {
-    archivo:      state.fileName,
-    fecha_desde:  fechas[0] || '',
-    fecha_hasta:  fechas[fechas.length-1] || '',
-    dias:         fechas.length,
-    total_ingresos: totalIngresos,
-    total_egresos:  totalEgresos,
-    total_neto:     totalIngresos+totalEgresos,
-    fecha_subida:   new Date().toISOString(),
-    cuentas:        JSON.stringify(activas),
-    fechas:         JSON.stringify(fechas),
+    archivo: state.fileName, fecha_desde: fechas[0]||'', fecha_hasta: fechas[fechas.length-1]||'',
+    dias: fechas.length, total_ingresos: totalIngresos, total_egresos: totalEgresos,
+    total_neto: totalIngresos+totalEgresos, fecha_subida: new Date().toISOString(),
+    cuentas: JSON.stringify(activas), fechas: JSON.stringify(fechas),
   };
 
   try {
     const { data, error } = await sbClient.from('periodos').insert([registro]).select();
     if (error) throw error;
     historial.unshift(data[0]);
-    if (historial.length > 20) historial = historial.slice(0, 20);
+    if (historial.length > 20) historial = historial.slice(0,20);
     renderHistorial();
     showToast('✓ Período guardado en el historial');
-  } catch(e) {
-    console.warn('No se pudo guardar en historial:', e.message);
-  }
+  } catch(e) { console.warn('No se pudo guardar en historial:', e.message); }
 }
 
 async function eliminarPeriodo(id, e) {
@@ -2179,129 +1680,89 @@ async function eliminarPeriodo(id, e) {
     if (error) throw error;
     historial = historial.filter(h => h.id !== id);
     renderHistorial();
-  } catch(e) {
-    console.warn('Error al eliminar:', e.message);
-  }
+  } catch(e) { console.warn('Error al eliminar:', e.message); }
 }
 
 function cargarDesdePeriodo(item) {
-  // Reconstruir state desde los datos guardados
   const cuentasData = JSON.parse(item.cuentas || '[]');
   const fechasData  = JSON.parse(item.fechas  || '[]');
-
-  // Marcar ítem activo
   document.querySelectorAll('.hist-item').forEach(el => el.classList.remove('active'));
   event?.currentTarget?.classList.add('active');
-
-  // Mostrar resumen del período guardado (sin movimientos detallados)
   mostrarResumenGuardado(item, cuentasData, fechasData);
 }
 
 function mostrarResumenGuardado(item, cuentasData, fechasData) {
-  // Actualizar header
   const desde = fmtISOtoDisplay(item.fecha_desde);
   const hasta  = fmtISOtoDisplay(item.fecha_hasta);
   document.getElementById('rTitle').textContent = `Caja — ${desde}${desde!==hasta?' al '+hasta:''}`;
   document.getElementById('rMeta').textContent  = `${item.dias} día${item.dias!==1?'s':''} · ${cuentasData.reduce((a,c)=>a+c.movimientos,0)} movimientos · Historial`;
 
-  // Stats ingresos
-  const ti = item.total_ingresos, te = item.total_egresos, tn = item.total_neto;
-  const tv = cuentasData.reduce((a,c)=>a+c.ventas,0);
-  const tc = cuentasData.reduce((a,c)=>a+(c.cargaSaldo||0),0);
+  const ti=item.total_ingresos, te=item.total_egresos, tn=item.total_neto;
+  const tv=cuentasData.reduce((a,c)=>a+c.ventas,0);
+  const tc=cuentasData.reduce((a,c)=>a+(c.cargaSaldo||0),0);
   document.getElementById('statsIngresos').innerHTML = `
     <div class="stat-card hi-green"><div class="sc-lbl">Total ingresos</div><div class="sc-val c-green">${ars(ti)}</div><div class="sc-sub">${cuentasData.filter(c=>c.ingresos>0).length} cuentas</div></div>
     <div class="stat-card hi-blue"><div class="sc-lbl">Ventas</div><div class="sc-val c-blue">${ars(tv)}</div><div class="sc-sub">${pct(tv,ti)} del total</div></div>
     <div class="stat-card hi-blue"><div class="sc-lbl">Pagos clientes</div><div class="sc-val c-blue">${ars(tc)}</div><div class="sc-sub">${pct(tc,ti)} del total</div></div>
-    <div class="stat-card"><div class="sc-lbl">Neto</div><div class="sc-val ${tn>=0?'c-green':'c-red'}">${ars(tn)}</div><div class="sc-sub">${tn>=0?'Positivo':'Negativo'}</div></div>
-  `;
+    <div class="stat-card"><div class="sc-lbl">Neto</div><div class="sc-val ${tn>=0?'c-green':'c-red'}">${ars(tn)}</div><div class="sc-sub">${tn>=0?'Positivo':'Negativo'}</div></div>`;
 
-  // Stats egresos
-  const allCats = {};
-  cuentasData.forEach(c => { Object.entries(c.egresosCats||{}).forEach(([cat,v])=>{ allCats[cat]=(allCats[cat]||0)+v; }); });
-  const catList = Object.entries(allCats).sort((a,b)=>a[1]-b[1]);
+  const allCats={};
+  cuentasData.forEach(c=>{Object.entries(c.egresosCats||{}).forEach(([cat,v])=>{allCats[cat]=(allCats[cat]||0)+v;});});
+  const catList=Object.entries(allCats).sort((a,b)=>a[1]-b[1]);
   document.getElementById('statsEgresos').innerHTML = `
     <div class="stat-card hi-red"><div class="sc-lbl">Total egresos</div><div class="sc-val c-red">${ars(Math.abs(te))}</div><div class="sc-sub">${catList.length} categorías</div></div>
-    ${catList.slice(0,3).map(([cat,v])=>`<div class="stat-card"><div class="sc-lbl">${esc(cat)}</div><div class="sc-val c-red">${ars(Math.abs(v))}</div><div class="sc-sub">${pct(Math.abs(v),Math.abs(te))}</div></div>`).join('')}
-  `;
+    ${catList.slice(0,3).map(([cat,v])=>`<div class="stat-card"><div class="sc-lbl">${esc(cat)}</div><div class="sc-val c-red">${ars(Math.abs(v))}</div><div class="sc-sub">${pct(Math.abs(v),Math.abs(te))}</div></div>`).join('')}`;
   document.getElementById('egresosTotal').textContent = ars(Math.abs(te));
-  document.getElementById('egresosGrid').innerHTML = catList.map(([cat,d])=>`
-    <div class="egr-item"><div class="egr-cat">${esc(cat)}</div><div class="egr-val">− ${ars(Math.abs(d))}</div><div class="egr-count">${pct(Math.abs(d),Math.abs(te))}</div></div>`).join('');
+  document.getElementById('egresosGrid').innerHTML = catList.map(([cat,d])=>`<div class="egr-item"><div class="egr-cat">${esc(cat)}</div><div class="egr-val">− ${ars(Math.abs(d))}</div><div class="egr-count">${pct(Math.abs(d),Math.abs(te))}</div></div>`).join('');
 
-  // Saldo cuentas principales
-  const cuentasPpal = cuentasData.filter(c=>CUENTAS_PPAL.some(k=>norm(c.nombre).includes(norm(k)))).sort((a,b)=>b.neto-a.neto);
-  const saldoComb   = cuentasPpal.reduce((a,c)=>a+c.neto,0);
-  document.getElementById('saldoGrid').innerHTML = cuentasPpal.map(c=>`
-    <div class="saldo-item"><div class="saldo-name">${esc(c.nombre)}</div><div class="saldo-val ${c.neto>=0?'c-green':'c-red'}">${ars(c.neto)}</div></div>`).join('');
-  const stv = document.getElementById('saldoTotal'); stv.textContent = ars(saldoComb);
-  stv.className = 'saldo-footer-val '+(saldoComb>=0?'c-green':'c-red');
+  const cuentasPpal=cuentasData.filter(c=>CUENTAS_PPAL.some(k=>norm(c.nombre).includes(norm(k)))).sort((a,b)=>b.neto-a.neto);
+  const saldoComb=cuentasPpal.reduce((a,c)=>a+c.neto,0);
+  document.getElementById('saldoGrid').innerHTML=cuentasPpal.map(c=>`<div class="saldo-item"><div class="saldo-name">${esc(c.nombre)}</div><div class="saldo-val ${c.neto>=0?'c-green':'c-red'}">${ars(c.neto)}</div></div>`).join('');
+  const stv=document.getElementById('saldoTotal'); stv.textContent=ars(saldoComb);
+  stv.className='saldo-footer-val '+(saldoComb>=0?'c-green':'c-red');
 
-  // Tabla cuentas
-  const sorted = [...cuentasData].sort((a,b)=>b.neto-a.neto);
-  const COLORS2 = ['#4f8ef7','#27c785','#f7924f','#c084fc','#facc15','#f472b6','#38bdf8','#fb7185','#34d399','#60a5fa'];
-  document.getElementById('grid').innerHTML = sorted.map((c,idx)=>{
-    const color=COLORS2[idx%COLORS2.length], nCls=c.neto>=0?'c-green':'c-red';
-    return `<div class="card">
-      <div class="card-head">
-        <div class="card-bar" style="background:${color}"></div>
-        <div class="card-info"><div class="card-name">${esc(c.nombre)}</div><div class="card-counts">${c.movimientos} movimientos</div></div>
-        <div class="card-col"><div class="card-col-lbl">Ingresos</div><div class="card-col-val c-green">${ars(c.ingresos)}</div></div>
-        <div class="card-col"><div class="card-col-lbl">Egresos</div><div class="card-col-val c-red">${ars(Math.abs(c.egresos))}</div></div>
-        <div class="card-neto"><div class="card-neto-lbl">Neto</div><div class="card-neto-val ${nCls}">${ars(c.neto)}</div></div>
-        <div class="toggle-ic" style="opacity:.3">—</div>
-      </div>
-    </div>`;
+  const sorted=[...cuentasData].sort((a,b)=>b.neto-a.neto);
+  const COLORS2=['#4f8ef7','#27c785','#f7924f','#c084fc','#facc15','#f472b6','#38bdf8','#fb7185','#34d399','#60a5fa'];
+  document.getElementById('grid').innerHTML=sorted.map((c,idx)=>{
+    const color=COLORS2[idx%COLORS2.length],nCls=c.neto>=0?'c-green':'c-red';
+    return `<div class="card"><div class="card-head"><div class="card-bar" style="background:${color}"></div><div class="card-info"><div class="card-name">${esc(c.nombre)}</div><div class="card-counts">${c.movimientos} movimientos</div></div><div class="card-col"><div class="card-col-lbl">Ingresos</div><div class="card-col-val c-green">${ars(c.ingresos)}</div></div><div class="card-col"><div class="card-col-lbl">Egresos</div><div class="card-col-val c-red">${ars(Math.abs(c.egresos))}</div></div><div class="card-neto"><div class="card-neto-lbl">Neto</div><div class="card-neto-val ${nCls}">${ars(c.neto)}</div></div><div class="toggle-ic" style="opacity:.3">—</div></div></div>`;
   }).join('');
 
-  document.getElementById('totalsBar').innerHTML = `
+  document.getElementById('totalsBar').innerHTML=`
     <div class="tot-block"><div class="tot-lbl">Ventas</div><div class="tot-val c-blue">${ars(tv)}</div></div>
     <div class="tot-block"><div class="tot-lbl">Pagos clientes</div><div class="tot-val c-blue">${ars(tc)}</div></div>
     <div class="tot-block sep"><div class="tot-lbl">Ingresos</div><div class="tot-val c-green">+${ars(ti)}</div></div>
     <div class="tot-block"><div class="tot-lbl">Egresos</div><div class="tot-val c-red">−${ars(Math.abs(te))}</div></div>
-    <div class="tot-block sep"><div class="tot-lbl">Neto</div><div class="tot-val ${tn>=0?'c-green':'c-red'}">${ars(tn)}</div></div>
-  `;
+    <div class="tot-block sep"><div class="tot-lbl">Neto</div><div class="tot-val ${tn>=0?'c-green':'c-red'}">${ars(tn)}</div></div>`;
 
-  document.getElementById('saldoCombinado').style.display = 'none';
+  // FIX Bug 1: eliminada la línea document.getElementById('saldoCombinado') que no existe en el DOM
   document.getElementById('results').style.display = 'block';
   document.getElementById('results').scrollIntoView({behavior:'smooth'});
 }
 
 function fmtISOtoDisplay(iso) {
   if (!iso) return '—';
-  // "02/03/2026 ..." o "2026-03-02"
   if (iso.includes('/')) return iso.slice(0,10);
   const [y,m,d] = iso.split('-');
   return `${d}/${m}/${y}`;
 }
 
 function renderHistorial() {
-  const panel = document.getElementById('historial-panel');
-  const list  = document.getElementById('hist-list');
-  const count = document.getElementById('hist-count');
-
+  const panel=document.getElementById('historial-panel');
+  const list=document.getElementById('hist-list');
+  const count=document.getElementById('hist-count');
   if (!sbClient) { panel.style.display='none'; return; }
-
-  panel.style.display = 'block';
-  count.textContent = `${historial.length} período${historial.length!==1?'s':''}`;
-
-  if (historial.length === 0) {
-    list.innerHTML = '<div class="hist-empty">Todavía no hay períodos guardados.<br>Subí un archivo Excel para comenzar.</div>';
-    return;
-  }
-
-  list.innerHTML = historial.map(item => {
-    const desde = fmtISOtoDisplay(item.fecha_desde);
-    const hasta  = fmtISOtoDisplay(item.fecha_hasta);
-    const periodo = desde === hasta ? desde : `${desde} → ${hasta}`;
-    const neto   = item.total_neto;
-    const nCls   = neto >= 0 ? 'c-green' : 'c-red';
-    const dias   = item.dias || 1;
-    const movs   = JSON.parse(item.cuentas||'[]').reduce((a,c)=>a+c.movimientos,0);
+  panel.style.display='block';
+  count.textContent=`${historial.length} período${historial.length!==1?'s':''}`;
+  if (historial.length===0) { list.innerHTML='<div class="hist-empty">Todavía no hay períodos guardados.<br>Subí un archivo Excel para comenzar.</div>'; return; }
+  list.innerHTML=historial.map(item=>{
+    const desde=fmtISOtoDisplay(item.fecha_desde),hasta=fmtISOtoDisplay(item.fecha_hasta);
+    const periodo=desde===hasta?desde:`${desde} → ${hasta}`;
+    const neto=item.total_neto,nCls=neto>=0?'c-green':'c-red';
+    const dias=item.dias||1,movs=JSON.parse(item.cuentas||'[]').reduce((a,c)=>a+c.movimientos,0);
     return `<div class="hist-item" onclick="cargarDesdePeriodo(${JSON.stringify(item).replace(/"/g,'&quot;')})">
       <div class="hist-dot"></div>
-      <div class="hist-info">
-        <div class="hist-periodo">${esc(periodo)}</div>
-        <div class="hist-meta">${esc(item.archivo)} · ${dias} día${dias!==1?'s':''} · ${movs} mov.</div>
-      </div>
+      <div class="hist-info"><div class="hist-periodo">${esc(periodo)}</div><div class="hist-meta">${esc(item.archivo)} · ${dias} día${dias!==1?'s':''} · ${movs} mov.</div></div>
       <div class="hist-neto ${nCls}">${ars(neto)}</div>
       <button class="hist-del" onclick="eliminarPeriodo(${item.id}, event)" title="Eliminar">✕</button>
     </div>`;
@@ -2309,39 +1770,31 @@ function renderHistorial() {
 }
 
 function mostrarSetupBanner() {
-  const banner = document.querySelector('.supabase-setup');
-  if (banner) banner.style.display = 'block';
+  const banner=document.querySelector('.supabase-setup');
+  if (banner) banner.style.display='block';
 }
 
-// Toast notification
 function showToast(msg) {
-  let t = document.getElementById('toast');
+  let t=document.getElementById('toast');
   if (!t) {
-    t = document.createElement('div');
-    t.id = 'toast';
-    t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1e2333;border:1px solid #27c785;color:#27c785;padding:12px 20px;border-radius:9px;font-size:13px;font-weight:600;z-index:9999;transition:opacity .3s';
+    t=document.createElement('div');
+    t.id='toast';
+    t.style.cssText='position:fixed;bottom:24px;right:24px;background:#1e2333;border:1px solid #27c785;color:#27c785;padding:12px 20px;border-radius:9px;font-size:13px;font-weight:600;z-index:9999;transition:opacity .3s';
     document.body.appendChild(t);
   }
-  t.textContent = msg;
-  t.style.opacity = '1';
+  t.textContent=msg; t.style.opacity='1';
   clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.style.opacity = '0', 3000);
+  t._timer=setTimeout(()=>t.style.opacity='0',3000);
 }
-
-// Inicializar historial al cargar
-document.addEventListener('DOMContentLoaded', () => {
-  cargarHistorial();
-});
 
 // ═══════════════════════════════════════════════════════
 // ── CONFIGURACIÓN COMPARTIDA (SUPABASE) ────────────────
 // ═══════════════════════════════════════════════════════
 
-// Variables de config activas (se sobreescriben desde Supabase)
 let cfgActiva = {
   hojas_excluidas: ['DEBIN'],
-  cats_excluidas:  window.CATS_EXCLUIDAS_DEFAULT || [],
-  desc_excluidas:  window.DESC_EXCLUIDAS_DEFAULT || [],
+  cats_excluidas:  [],
+  desc_excluidas:  [],
   cats_internas:   ['transferencia entre cuentas'],
   cuentas_ppal:    ['efectivo','caja general','caja chica','cheque','tarjeta debito','tarjeta credito','qr','transferencia bancaria','mercado pago','modo','link de pago'],
 };
@@ -2354,162 +1807,97 @@ async function cargarConfig() {
     data.forEach(row => {
       try {
         const val = JSON.parse(row.valor);
-        if (row.clave === 'hojas_excluidas') cfgActiva.hojas_excluidas = val;
-        if (row.clave === 'cats_excluidas')  cfgActiva.cats_excluidas  = val;
-        if (row.clave === 'desc_excluidas')  cfgActiva.desc_excluidas  = val;
-        if (row.clave === 'cats_internas')   cfgActiva.cats_internas   = val;
-        if (row.clave === 'cuentas_ppal')    cfgActiva.cuentas_ppal    = val;
+        if (row.clave==='hojas_excluidas') cfgActiva.hojas_excluidas=val;
+        if (row.clave==='cats_excluidas')  cfgActiva.cats_excluidas=val;
+        if (row.clave==='desc_excluidas')  cfgActiva.desc_excluidas=val;
+        if (row.clave==='cats_internas')   cfgActiva.cats_internas=val;
+        if (row.clave==='cuentas_ppal')    cfgActiva.cuentas_ppal=val;
       } catch(e) {}
     });
-    // Sincronizar con las constantes que usa el motor
     sincronizarConfigConMotor();
     poblarPanelConfig();
-    console.log('✓ Configuración cargada desde Supabase');
-  } catch(e) {
-    console.warn('No se pudo cargar config:', e.message);
-  }
+  } catch(e) { console.warn('No se pudo cargar config:', e.message); }
 }
 
 function sincronizarConfigConMotor() {
-  // Reescribir los arrays que usa la lógica de procesamiento
-  EXCLUIR.length = 0;
-  cfgActiva.hojas_excluidas.forEach(v => EXCLUIR.push(v));
-
-  CATS_EXCLUIDAS.length = 0;
-  cfgActiva.cats_excluidas.forEach(v => CATS_EXCLUIDAS.push(v));
-
-  DESC_EXCLUIDAS.length = 0;
-  cfgActiva.desc_excluidas.forEach(v => DESC_EXCLUIDAS.push(v));
-
-  CATS_INTERNAS.length = 0;
-  cfgActiva.cats_internas.forEach(v => CATS_INTERNAS.push(v));
-
-  CUENTAS_PPAL.length = 0;
-  cfgActiva.cuentas_ppal.forEach(v => CUENTAS_PPAL.push(v));
+  EXCLUIR.length=0; cfgActiva.hojas_excluidas.forEach(v=>EXCLUIR.push(v));
+  CATS_EXCLUIDAS.length=0; cfgActiva.cats_excluidas.forEach(v=>CATS_EXCLUIDAS.push(v));
+  DESC_EXCLUIDAS.length=0; cfgActiva.desc_excluidas.forEach(v=>DESC_EXCLUIDAS.push(v));
+  CATS_INTERNAS.length=0; cfgActiva.cats_internas.forEach(v=>CATS_INTERNAS.push(v));
+  CUENTAS_PPAL.length=0; cfgActiva.cuentas_ppal.forEach(v=>CUENTAS_PPAL.push(v));
 }
 
 function poblarPanelConfig() {
-  const set = (id, arr) => {
-    const el = document.getElementById(id);
-    if (el) el.value = arr.join('\n');
-  };
-  set('cfg-hojas', cfgActiva.hojas_excluidas);
-  set('cfg-cats',  cfgActiva.cats_excluidas);
-  set('cfg-desc',  cfgActiva.desc_excluidas);
-  set('cfg-int',   cfgActiva.cats_internas);
-  set('cfg-ppal',  cfgActiva.cuentas_ppal);
+  const set=(id,arr)=>{const el=document.getElementById(id);if(el)el.value=arr.join('\n');};
+  set('cfg-hojas',cfgActiva.hojas_excluidas);
+  set('cfg-cats',cfgActiva.cats_excluidas);
+  set('cfg-desc',cfgActiva.desc_excluidas);
+  set('cfg-int',cfgActiva.cats_internas);
+  set('cfg-ppal',cfgActiva.cuentas_ppal);
 }
 
 function toggleConfig() {
-  const panel = document.getElementById('config-panel');
-  const visible = panel.style.display !== 'none';
-  panel.style.display = visible ? 'none' : 'block';
-  if (!visible) {
-    poblarPanelConfig();
-    panel.scrollIntoView({ behavior: 'smooth' });
-  }
+  const panel=document.getElementById('config-panel');
+  const visible=panel.style.display!=='none';
+  panel.style.display=visible?'none':'block';
+  if (!visible) { poblarPanelConfig(); panel.scrollIntoView({behavior:'smooth'}); }
 }
 
 async function guardarConfig() {
   if (!sbClient) { alert('Supabase no configurado — revisá el README'); return; }
-
-  const get = id => document.getElementById(id).value
-    .split('\n').map(s => s.trim()).filter(Boolean);
-
+  const get=id=>document.getElementById(id).value.split('\n').map(s=>s.trim()).filter(Boolean);
   const nuevaConfig = {
-    hojas_excluidas: get('cfg-hojas'),
-    cats_excluidas:  get('cfg-cats'),
-    desc_excluidas:  get('cfg-desc'),
-    cats_internas:   get('cfg-int'),
-    cuentas_ppal:    get('cfg-ppal'),
+    hojas_excluidas:get('cfg-hojas'), cats_excluidas:get('cfg-cats'),
+    desc_excluidas:get('cfg-desc'),   cats_internas:get('cfg-int'),
+    cuentas_ppal:get('cfg-ppal'),
   };
-
-  const btn = document.getElementById('btn-save-cfg');
-  btn.disabled = true; btn.textContent = '⏳ Guardando...';
-
+  const btn=document.getElementById('btn-save-cfg');
+  btn.disabled=true; btn.textContent='⏳ Guardando...';
   try {
-    const updates = Object.entries(nuevaConfig).map(([clave, arr]) => ({
-      clave, valor: JSON.stringify(arr), actualizado_en: new Date().toISOString()
-    }));
-
+    const updates=Object.entries(nuevaConfig).map(([clave,arr])=>({clave,valor:JSON.stringify(arr),actualizado_en:new Date().toISOString()}));
     for (const u of updates) {
-      const { error } = await sbClient
-        .from('configuracion')
-        .upsert(u, { onConflict: 'clave' });
+      const {error}=await sbClient.from('configuracion').upsert(u,{onConflict:'clave'});
       if (error) throw error;
     }
-
-    // Aplicar inmediatamente
-    cfgActiva = nuevaConfig;
-    sincronizarConfigConMotor();
-
-    const st = document.getElementById('cfg-status');
-    st.textContent = '✓ Configuración guardada y aplicada para todo el equipo';
-    st.className = 'cfg-status ok'; st.style.display = 'block';
-    setTimeout(() => { st.style.display = 'none'; }, 4000);
-
+    cfgActiva=nuevaConfig; sincronizarConfigConMotor();
+    const st=document.getElementById('cfg-status');
+    st.textContent='✓ Configuración guardada y aplicada para todo el equipo';
+    st.className='cfg-status ok'; st.style.display='block';
+    setTimeout(()=>{st.style.display='none';},4000);
     showToast('✓ Configuración actualizada para todo el equipo');
-
-    // Si hay datos cargados, re-procesar con la nueva config
-    if (state) { render(); }
-
+    if (state) render();
   } catch(e) {
-    const st = document.getElementById('cfg-status');
-    st.textContent = 'Error al guardar: ' + e.message;
-    st.className = 'cfg-status err'; st.style.display = 'block';
-  } finally {
-    btn.disabled = false; btn.textContent = '💾 Guardar cambios';
-  }
+    const st=document.getElementById('cfg-status');
+    st.textContent='Error al guardar: '+e.message;
+    st.className='cfg-status err'; st.style.display='block';
+  } finally { btn.disabled=false; btn.textContent='💾 Guardar cambios'; }
 }
-
-// ═══════════════════════════════════════════════════════
-// ── ÚLTIMO ARCHIVO CARGADO (caché en Supabase) ─────────
-// ═══════════════════════════════════════════════════════
 
 async function guardarUltimoArchivo(fileName, processedData) {
   if (!sbClient) return;
   try {
-    // Guardar resumen del último estado procesado (sin los movimientos completos — demasiado grande)
-    const resumen = {
-      fileName:  fileName,
-      fechas:    processedData.fechas,
-      cuentasNombres: processedData.cuentas.map(c => c.nombre),
-      timestamp: new Date().toISOString(),
-    };
-    await sbClient.from('configuracion').upsert(
-      { clave: 'ultimo_archivo', valor: JSON.stringify(resumen), actualizado_en: new Date().toISOString() },
-      { onConflict: 'clave' }
-    );
-  } catch(e) {
-    console.warn('No se pudo guardar último archivo:', e.message);
-  }
+    const resumen={fileName,fechas:processedData.fechas,cuentasNombres:processedData.cuentas.map(c=>c.nombre),timestamp:new Date().toISOString()};
+    await sbClient.from('configuracion').upsert({clave:'ultimo_archivo',valor:JSON.stringify(resumen),actualizado_en:new Date().toISOString()},{onConflict:'clave'});
+  } catch(e) { console.warn('No se pudo guardar último archivo:', e.message); }
 }
 
 async function mostrarUltimoArchivoCargado() {
   if (!sbClient) return;
   try {
-    const { data } = await sbClient
-      .from('configuracion')
-      .select('valor')
-      .eq('clave', 'ultimo_archivo')
-      .single();
+    const {data}=await sbClient.from('configuracion').select('valor').eq('clave','ultimo_archivo').single();
     if (!data) return;
-    const info = JSON.parse(data.valor);
-    const ts   = new Date(info.timestamp).toLocaleString('es-AR');
-    const msg  = `Último archivo: ${info.fileName} — ${ts}`;
-    // Mostrar en el subtítulo del drop
-    const sub = document.querySelector('.drop p');
-    if (sub) sub.textContent = msg;
+    const info=JSON.parse(data.valor);
+    const ts=new Date(info.timestamp).toLocaleString('es-AR');
+    const sub=document.querySelector('.drop p');
+    if (sub) sub.textContent=`Último archivo: ${info.fileName} — ${ts}`;
   } catch(e) {}
 }
 
-// Inicializar todo al cargar la página
 document.addEventListener('DOMContentLoaded', async () => {
-  // Verificar que SheetJS cargó
   if (typeof XLSX === 'undefined') {
-    document.querySelector('.drop h2').textContent = '⚠ No se pudo cargar SheetJS';
-    document.querySelector('.drop p').textContent = 'Verificá tu conexión a internet y recargá la página.';
-    document.querySelector('.btn').style.display = 'none';
+    document.querySelector('.drop h2').textContent='⚠ No se pudo cargar SheetJS';
+    document.querySelector('.drop p').textContent='Verificá tu conexión a internet y recargá la página.';
+    document.querySelector('.btn').style.display='none';
   }
   try { await cargarConfig(); } catch(e) { console.warn('cargarConfig:', e.message); }
   try { await cargarHistorial(); } catch(e) { console.warn('cargarHistorial:', e.message); }
@@ -2521,85 +1909,47 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ═══════════════════════════════════════════════════════
 
 const GRUPOS_MEDIOS = [
-  {
-    nombre: 'Efectivo',
-    color: '#27c785',
-    cuentas: ['efectivo'],
-    expandible: false,
-  },
-  {
-    nombre: 'Cheque',
-    color: '#4f8ef7',
-    cuentas: ['cheque'],
-    expandible: false,
-  },
-  {
-    nombre: 'Medios electrónicos',
-    color: '#fbbf24',
-    // Tarjetas + todos los medios digitales
-    cuentas: ['tarjeta debito', 'tarjeta credito', 'qr', 'modo', 'link de pago', 'mercado pago', 'transferencia bancaria'],
-    expandible: true,
-  },
+  { nombre:'Efectivo', color:'#27c785', cuentas:['efectivo'], expandible:false },
+  { nombre:'Cheque',   color:'#4f8ef7', cuentas:['cheque'],   expandible:false },
+  { nombre:'Medios electrónicos', color:'#fbbf24', cuentas:['tarjeta debito','tarjeta credito','qr','modo','link de pago','mercado pago','transferencia bancaria'], expandible:true },
 ];
 
 function renderGrupos(activas) {
-  const totalVentasGlobal = activas.flatMap(c => c.movs.filter(m => !m.esInterno && !m.esAnulacion))
-    .filter(m => norm(m.categoria) === 'venta' && m.importe > 0)
-    .reduce((a,m) => a+m.importe, 0);
-  const totalCargaGlobal = activas.flatMap(c => c.movs.filter(m => !m.esInterno && !m.esAnulacion))
-    .filter(m => norm(m.categoria).includes('carga de saldo') && m.importe > 0)
-    .reduce((a,m) => a+m.importe, 0);
-  const totalIngGlobal = totalVentasGlobal + totalCargaGlobal;
+  const totalVentasGlobal=activas.flatMap(c=>c.movs.filter(m=>!m.esInterno&&!m.esAnulacion)).filter(m=>norm(m.categoria)==='venta'&&m.importe>0).reduce((a,m)=>a+m.importe,0);
+  const totalCargaGlobal=activas.flatMap(c=>c.movs.filter(m=>!m.esInterno&&!m.esAnulacion)).filter(m=>norm(m.categoria).includes('carga de saldo')&&m.importe>0).reduce((a,m)=>a+m.importe,0);
+  const totalIngGlobal=totalVentasGlobal+totalCargaGlobal;
 
-  // Stats globales ventas/cobros
-  document.getElementById('statsGruposTotal').style.display = 'grid';
-  document.getElementById('statsGruposTotal').innerHTML = `
-    <div class="stat-card hi-blue">
-      <div class="sc-lbl">Ventas — total</div>
-      <div class="sc-val c-blue">${ars(totalVentasGlobal)}</div>
-      <div class="sc-sub">${pct(totalVentasGlobal, totalIngGlobal)} del total cobrado</div>
-    </div>
-    <div class="stat-card hi-green">
-      <div class="sc-lbl">Cobros de clientes — total</div>
-      <div class="sc-val c-green">${ars(totalCargaGlobal)}</div>
-      <div class="sc-sub">${pct(totalCargaGlobal, totalIngGlobal)} del total cobrado</div>
-    </div>
-    <div class="stat-card">
-      <div class="sc-lbl">Total cobrado</div>
-      <div class="sc-val c-text">${ars(totalIngGlobal)}</div>
-      <div class="sc-sub">Ventas + Cobros de clientes</div>
-    </div>
-  `;
+  document.getElementById('statsGruposTotal').style.display='grid';
+  document.getElementById('statsGruposTotal').innerHTML=`
+    <div class="stat-card hi-blue"><div class="sc-lbl">Ventas — total</div><div class="sc-val c-blue">${ars(totalVentasGlobal)}</div><div class="sc-sub">${pct(totalVentasGlobal,totalIngGlobal)} del total cobrado</div></div>
+    <div class="stat-card hi-green"><div class="sc-lbl">Cobros de clientes — total</div><div class="sc-val c-green">${ars(totalCargaGlobal)}</div><div class="sc-sub">${pct(totalCargaGlobal,totalIngGlobal)} del total cobrado</div></div>
+    <div class="stat-card"><div class="sc-lbl">Total cobrado</div><div class="sc-val c-text">${ars(totalIngGlobal)}</div><div class="sc-sub">Ventas + Cobros de clientes</div></div>`;
 
-  const grid = document.getElementById('gruposGrid');
-  document.getElementById('gruposSection').style.display = 'block';
+  const grid=document.getElementById('gruposGrid');
+  document.getElementById('gruposSection').style.display='block';
 
-  grid.innerHTML = GRUPOS_MEDIOS.map((grupo, gi) => {
-    const cuentasGrupo = activas.filter(c =>
-      grupo.cuentas.some(k => norm(c.nombre).includes(norm(k)))
-    );
-    if (cuentasGrupo.length === 0) return '';
+  grid.innerHTML=GRUPOS_MEDIOS.map((grupo,gi)=>{
+    const cuentasGrupo=activas.filter(c=>grupo.cuentas.some(k=>norm(c.nombre).includes(norm(k))));
+    if (cuentasGrupo.length===0) return '';
+    const movsGrupo=cuentasGrupo.flatMap(c=>c.movs.filter(m=>!m.esInterno&&!m.esAnulacion));
+    const ventas=movsGrupo.filter(m=>norm(m.categoria)==='venta'&&m.importe>0).reduce((a,m)=>a+m.importe,0);
+    const carga=movsGrupo.filter(m=>norm(m.categoria).includes('carga de saldo')&&m.importe>0).reduce((a,m)=>a+m.importe,0);
+    const neto=cuentasGrupo.reduce((a,c)=>a+c.neto,0);
+    const total=ventas+carga;
+    const pctGrupoV=totalIngGlobal>0?(ventas/totalIngGlobal*100).toFixed(1):'0.0';
+    const pctGrupoC=totalIngGlobal>0?(carga/totalIngGlobal*100).toFixed(1):'0.0';
+    const pctGrupoT=totalIngGlobal>0?(total/totalIngGlobal*100).toFixed(1):'0.0';
+    const pctVInt=total>0?(ventas/total*100):0;
+    const pctCInt=total>0?(carga/total*100):0;
+    const netoCls=neto>=0?'c-green':'c-red';
 
-    const movsGrupo = cuentasGrupo.flatMap(c => c.movs.filter(m => !m.esInterno && !m.esAnulacion));
-    const ventas = movsGrupo.filter(m => norm(m.categoria) === 'venta' && m.importe > 0).reduce((a,m) => a+m.importe, 0);
-    const carga  = movsGrupo.filter(m => norm(m.categoria).includes('carga de saldo') && m.importe > 0).reduce((a,m) => a+m.importe, 0);
-    const neto   = cuentasGrupo.reduce((a,c) => a + c.neto, 0);
-    const total  = ventas + carga;
-    const pctGrupoV = totalIngGlobal > 0 ? (ventas / totalIngGlobal * 100).toFixed(1) : '0.0';
-    const pctGrupoC = totalIngGlobal > 0 ? (carga  / totalIngGlobal * 100).toFixed(1) : '0.0';
-    const pctGrupoT = totalIngGlobal > 0 ? (total  / totalIngGlobal * 100).toFixed(1) : '0.0';
-    const pctVInt   = total > 0 ? (ventas / total * 100) : 0;
-    const pctCInt   = total > 0 ? (carga  / total * 100) : 0;
-    const netoCls   = neto >= 0 ? 'c-green' : 'c-red';
-
-    // Detalle por cuenta (solo si expandible)
-    let detalleHtml = '';
+    let detalleHtml='';
     if (grupo.expandible) {
-      detalleHtml = `
+      detalleHtml=`
         <div class="grupo-detalle" id="grupo-det-${gi}" style="display:none;border-top:1px solid var(--border);padding-top:10px;margin-top:10px">
-          ${cuentasGrupo.filter(c => c.neto !== 0 || c.ingresos !== 0).map(c => {
-            const cv = c.movs.filter(m=>!m.esInterno&&!m.esAnulacion&&norm(m.categoria)==='venta'&&m.importe>0).reduce((a,m)=>a+m.importe,0);
-            const cc = c.movs.filter(m=>!m.esInterno&&!m.esAnulacion&&norm(m.categoria).includes('carga de saldo')&&m.importe>0).reduce((a,m)=>a+m.importe,0);
+          ${cuentasGrupo.filter(c=>c.neto!==0||c.ingresos!==0).map(c=>{
+            const cv=c.movs.filter(m=>!m.esInterno&&!m.esAnulacion&&norm(m.categoria)==='venta'&&m.importe>0).reduce((a,m)=>a+m.importe,0);
+            const cc=c.movs.filter(m=>!m.esInterno&&!m.esAnulacion&&norm(m.categoria).includes('carga de saldo')&&m.importe>0).reduce((a,m)=>a+m.importe,0);
             return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(43,49,71,.4)">
               <span style="font-size:11px;color:var(--text2)">${esc(c.nombre)}</span>
               <div style="text-align:right">
@@ -2610,53 +1960,32 @@ function renderGrupos(activas) {
             </div>`;
           }).join('')}
         </div>
-        <button onclick="toggleGrupoDet(${gi})" style="width:100%;margin-top:10px;padding:5px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--text3);font-size:11px;cursor:pointer;font-family:var(--sans)" id="grupo-btn-${gi}">
-          Ver detalle ▼
-        </button>`;
+        <button onclick="toggleGrupoDet(${gi})" style="width:100%;margin-top:10px;padding:5px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--text3);font-size:11px;cursor:pointer;font-family:var(--sans)" id="grupo-btn-${gi}">Ver detalle ▼</button>`;
     }
 
-    return `
-      <div class="grupo-card">
-        <div class="grupo-header">
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="width:8px;height:8px;border-radius:50%;background:${grupo.color};flex-shrink:0"></div>
-            <span class="grupo-nombre">${esc(grupo.nombre)}</span>
-          </div>
-          <span class="grupo-neto ${netoCls}">${ars(neto)}</span>
-        </div>
-        <div class="grupo-body">
-          <div class="grupo-row">
-            <span class="grupo-label">Ventas</span>
-            <span class="grupo-val c-blue">${ars(ventas)} <span style="color:var(--text3);font-size:10px">(${pctGrupoV}%)</span></span>
-          </div>
-          <div class="grupo-row">
-            <span class="grupo-label">Cobros clientes</span>
-            <span class="grupo-val c-green">${ars(carga)} <span style="color:var(--text3);font-size:10px">(${pctGrupoC}%)</span></span>
-          </div>
-          <div class="grupo-row" style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px">
-            <span class="grupo-label" style="font-weight:700;color:var(--text2)">Total grupo</span>
-            <span class="grupo-val" style="color:var(--text)">${ars(total)} <span style="color:var(--text3);font-size:10px">(${pctGrupoT}%)</span></span>
-          </div>
-          ${total > 0 ? `
-          <div class="grupo-pct-bar" style="margin-top:10px;overflow:hidden">
-            <div class="grupo-pct-fill-v" style="width:${pctVInt.toFixed(1)}%"></div>
-            <div class="grupo-pct-fill-c" style="width:${pctCInt.toFixed(1)}%"></div>
-          </div>
-          <div class="grupo-pct-labels">
-            <span style="color:var(--accent)">Ventas ${pctVInt.toFixed(0)}%</span>
-            <span style="color:var(--green)">Cobros ${pctCInt.toFixed(0)}%</span>
-          </div>` : ''}
-          ${detalleHtml}
-        </div>
-      </div>`;
+    return `<div class="grupo-card">
+      <div class="grupo-header">
+        <div style="display:flex;align-items:center;gap:8px"><div style="width:8px;height:8px;border-radius:50%;background:${grupo.color};flex-shrink:0"></div><span class="grupo-nombre">${esc(grupo.nombre)}</span></div>
+        <span class="grupo-neto ${netoCls}">${ars(neto)}</span>
+      </div>
+      <div class="grupo-body">
+        <div class="grupo-row"><span class="grupo-label">Ventas</span><span class="grupo-val c-blue">${ars(ventas)} <span style="color:var(--text3);font-size:10px">(${pctGrupoV}%)</span></span></div>
+        <div class="grupo-row"><span class="grupo-label">Cobros clientes</span><span class="grupo-val c-green">${ars(carga)} <span style="color:var(--text3);font-size:10px">(${pctGrupoC}%)</span></span></div>
+        <div class="grupo-row" style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px"><span class="grupo-label" style="font-weight:700;color:var(--text2)">Total grupo</span><span class="grupo-val" style="color:var(--text)">${ars(total)} <span style="color:var(--text3);font-size:10px">(${pctGrupoT}%)</span></span></div>
+        ${total>0?`<div class="grupo-pct-bar" style="margin-top:10px;overflow:hidden"><div class="grupo-pct-fill-v" style="width:${pctVInt.toFixed(1)}%"></div><div class="grupo-pct-fill-c" style="width:${pctCInt.toFixed(1)}%"></div></div><div class="grupo-pct-labels"><span style="color:var(--accent)">Ventas ${pctVInt.toFixed(0)}%</span><span style="color:var(--green)">Cobros ${pctCInt.toFixed(0)}%</span></div>`:''}
+        ${detalleHtml}
+      </div>
+    </div>`;
   }).join('');
 }
 
 function toggleGrupoDet(gi) {
-  const det = document.getElementById('grupo-det-' + gi);
-  const btn = document.getElementById('grupo-btn-' + gi);
-  const open = det.style.display === 'none';
-  det.style.display = open ? 'block' : 'none';
-  btn.innerHTML = open ? 'Ocultar detalle ▲' : 'Ver detalle ▼';
+  const det=document.getElementById('grupo-det-'+gi);
+  const btn=document.getElementById('grupo-btn-'+gi);
+  const open=det.style.display==='none';
+  det.style.display=open?'block':'none';
+  btn.innerHTML=open?'Ocultar detalle ▲':'Ver detalle ▼';
 }
-
+</script>
+</body>
+</html>
