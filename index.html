@@ -625,13 +625,17 @@ hr.div { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
 // ── Config ────────────────────────────────────────────────
 let EXCLUIR = ['DEBIN'];
 let CATS_INTERNAS = ['transferencia entre cuentas'];
-let CATS_EXCLUIDAS = ['carga por error','reversa','devolución','devolucion','saldo inicial'];
+// CATS_EXCLUIDAS: solo errores técnicos — se descartan de todo cálculo y del detalle
+// 'saldo inicial' NO está acá: el vuelto de apertura con fecha es dinero físico real
+// que sí impacta en el saldo de la cuenta, aunque no suma al Total Ingresos
+let CATS_EXCLUIDAS = ['carga por error','reversa','devolución','devolucion'];
 const CATS_INGRESO_PRINCIPAL = ['venta', 'carga de saldo cliente', 'ajuste caja'];
 const CATS_ANULACION = [
   'anulación de venta','anulacion de venta',
   'anulación de carga de saldo cliente','anulacion de carga de saldo cliente',
 ];
-let DESC_EXCLUIDAS = ['error de carga','carga por error','reversa','saldo inicial de caja'];
+// DESC_EXCLUIDAS: 'saldo inicial de caja' también se saca — mismo criterio que CATS_EXCLUIDAS
+let DESC_EXCLUIDAS = ['error de carga','carga por error','reversa'];
 let CUENTAS_PPAL = ['efectivo','caja general','caja chica','cheque','tarjeta debito','tarjeta credito','qr','transferencia bancaria','mercado pago','modo','link de pago'];
 let CUENTAS_SIN_INGRESO = ['caja general','caja chica','movimientos de caja','cuenta banco'];
 const COLORS = ['#4f8ef7','#27c785','#f7924f','#c084fc','#facc15','#f472b6','#38bdf8','#fb7185','#34d399','#60a5fa','#a78bfa','#4ade80','#fbbf24','#e879f9'];
@@ -859,8 +863,10 @@ function render() {
 
   const cuentasFiltradas = cuentas.map(c => {
     const movs = filtrarMovs(c.movs);
+    // El neto individual SÍ incluye pases internos: Efectivo baja, Caja General sube
+    // Los internos solo se excluyen de los totales GLOBALES para evitar duplicación
+    const neto        = movs.reduce((a,m) => a + m.importe, 0);
     const movsReales  = movs.filter(m => !m.esInterno);
-    const neto        = movsReales.reduce((a,m) => a + m.importe, 0);
     const ingresosMovs   = movsReales.filter(m => m.importe > 0 && !m.esAnulacion);
     const egresosMovs    = movsReales.filter(m => m.importe < 0 && !m.esAnulacion);
     const anulacionMovs  = movsReales.filter(m => m.esAnulacion);
