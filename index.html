@@ -98,6 +98,19 @@ hr.div { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
 /* ── DEBIN BADGE ── */
 .debin-badge { display: none; align-items: center; gap: 10px; background: rgba(240,82,82,.07); border: 1px solid rgba(240,82,82,.18); border-radius: 8px; padding: 9px 14px; font-size: 12px; color: var(--text2); margin-bottom: 20px; }
 .debin-badge b { color: var(--red); }
+.cats-nuevas { background: rgba(251,191,36,.06); border: 1px solid rgba(251,191,36,.25); border-radius: 8px; padding: 11px 14px; font-size: 12px; color: var(--text2); margin-bottom: 20px; }
+.cats-nuevas-header { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+.cats-nuevas-header b { color: var(--gold); }
+.cats-nuevas-toggle { color: var(--text3); font-size: 11px; margin-left: auto; }
+.cats-nuevas-body { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(251,191,36,.18); display: none; }
+.cats-nuevas.open .cats-nuevas-body { display: block; }
+.cats-nuevas.open .cats-nuevas-toggle { transform: rotate(180deg); display: inline-block; }
+.cat-nueva-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr 2fr; gap: 12px; padding: 5px 0; font-size: 12px; align-items: center; }
+.cat-nueva-row + .cat-nueva-row { border-top: 1px solid var(--border); }
+.cat-nueva-name { font-weight: 600; color: var(--text); }
+.cat-nueva-count { color: var(--text3); }
+.cat-nueva-monto { font-family: var(--mono); font-weight: 600; }
+.cat-nueva-hojas { font-size: 11px; color: var(--text3); }
 
 /* ── STATS ── */
 .stats-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text3); margin-bottom: 10px; margin-top: 24px; }
@@ -127,6 +140,25 @@ hr.div { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
 .egr-cat { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
 .egr-val { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--red); }
 .egr-count { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+/* ── DESGLOSE DE INGRESOS ── */
+.ing-desglose { background: var(--surface); border: 1px solid rgba(39,199,133,.25); border-radius: 11px; margin: 12px 0 24px; overflow: hidden; }
+.ing-desglose-header { padding: 12px 18px; background: rgba(39,199,133,.05); border-bottom: 1px solid rgba(39,199,133,.15); display: flex; justify-content: space-between; align-items: center; }
+.ing-desglose-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--green); }
+.ing-desglose-close { font-size: 12px; color: var(--text3); cursor: pointer; padding: 4px 10px; border-radius: 6px; user-select: none; }
+.ing-desglose-close:hover { background: var(--surface2); color: var(--text); }
+.ing-desglose-body { padding: 0; }
+.ing-section-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); padding: 14px 18px 6px; }
+.ing-section-lbl .ing-section-total { float: right; font-family: var(--mono); font-weight: 700; color: var(--text); }
+.ing-row { display: flex; justify-content: space-between; padding: 6px 18px; font-size: 13px; }
+.ing-row-name { color: var(--text2); }
+.ing-row-val { font-family: var(--mono); font-weight: 600; }
+.ing-subtotal { display: flex; justify-content: space-between; padding: 10px 18px; margin-top: 4px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; }
+.ing-subtotal-val { font-family: var(--mono); }
+.ing-final { display: flex; justify-content: space-between; padding: 14px 18px; background: rgba(39,199,133,.06); border-top: 1px solid rgba(39,199,133,.2); font-size: 15px; font-weight: 800; }
+.ing-final-val { font-family: var(--mono); color: var(--green); }
+.ing-anul-row .ing-row-val { color: var(--gold); }
+.ing-foot-note { font-size: 10px; color: var(--text3); padding: 10px 18px; line-height: 1.5; border-top: 1px solid var(--border); }
 
 /* ── SALDO CUENTAS PRINCIPALES ── */
 .saldo-panel { background: var(--surface); border: 1px solid rgba(251,191,36,.3); border-radius: 11px; margin-bottom: 28px; overflow: hidden; }
@@ -431,7 +463,7 @@ hr.div { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
   <div class="header-tag">📊 Herramienta financiera</div>
   <h1>Flujo de <span>Caja</span> Diario</h1>
   <p class="tagline">Lee todas las hojas · Excluye DEBIN · Concilia por medio de pago · Filtro por período</p>
-  <div class="version-badge" style="margin-bottom:24px">v1.1 · Actualizado: Abril 2026</div>
+  <div class="version-badge" id="versionBadge" style="margin-bottom:24px">v · cargando…</div>
 
   <!-- Drop -->
   <div class="drop" id="drop" onclick="document.getElementById('fi').click()">
@@ -498,9 +530,15 @@ hr.div { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
       <!-- DEBIN notice -->
       <div class="debin-badge" id="debinBadge"><span>⛔</span><span>La hoja <b>DEBIN</b> fue excluida del cálculo.</span></div>
 
+      <!-- Aviso de categorías desconocidas (mejora C12) -->
+      <div class="cats-nuevas" id="catsNuevasPanel" style="display:none"></div>
+
       <!-- Stats ingresos -->
       <div class="stats-section-title">Ingresos</div>
       <div class="stats" id="statsIngresos"></div>
+
+      <!-- Panel desglose de ingresos (desplegable) -->
+      <div class="ing-desglose" id="ingDesglosePanel" style="display:none"></div>
 
       <!-- Stats egresos -->
       <div class="stats-section-title" style="margin-top:16px">Egresos</div>
@@ -622,6 +660,20 @@ hr.div { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
 </div>
 
 <script>
+// ── Versión ──────────────────────────────────────────────
+// Actualizar la fecha cada vez que se modifica el archivo y se sube a producción.
+// Formato ISO (yyyy-mm-dd) para que el ordenamiento sea consistente.
+const VERSION = {
+  fecha: '2026-05-06',
+  notas: 'Total Ingresos unificado · comparativa de períodos · detector de categorías'
+};
+
+// Formatea la fecha de versión a dd/mm/yyyy para mostrar al usuario
+function versionDisplay() {
+  const [y, m, d] = VERSION.fecha.split('-');
+  return `${d}/${m}/${y}`;
+}
+
 // ── Config ────────────────────────────────────────────────
 let EXCLUIR = ['DEBIN'];
 let CATS_INTERNAS = ['transferencia entre cuentas'];
@@ -881,22 +933,20 @@ function render() {
   const activas = cuentasFiltradas.filter(c => c.movs.length > 0);
   const movsGlobal = activas.flatMap(c => c.movs.filter(m => !m.esInterno));
 
-  const totalIngresosBrutos = movsGlobal.filter(m => !m.esAnulacion).reduce((a,m) => {
-    const cn = norm(m.categoria);
-    const esAjuste = cn.includes('ajuste caja');
-    const esVentaOCarga = ['venta','carga de saldo cliente'].some(c => cn.includes(norm(c)));
-    if (esAjuste) return a + m.importe;
-    if (esVentaOCarga && m.importe > 0) return a + m.importe;
-    return a;
-  }, 0);
-  const totalAnulaciones = movsGlobal.filter(m => m.esAnulacion).reduce((a,m) => a+m.importe, 0);
-  const totalIngresos = totalIngresosBrutos + totalAnulaciones;
+  // ── Cálculo unificado: usa la función central calcularTotalesIngresos ──
+  // Misma fórmula en pantalla, PDF e historial. Excluye DEBIN, cuentas internas,
+  // SALDO INICIAL (no es venta/carga/ajuste), pases internos, errores técnicos.
+  const _t = calcularTotalesIngresos(activas);
+  const totalIngresos      = _t.totalIngresos;
+  const totalIngresosBrutos = _t.totalBruto;
+  const totalAnulaciones   = _t.totalAnulaciones;
+  const totalVentas        = _t.totalVentas;
+  const totalCarga         = _t.totalCarga;
+  const totalAjuste        = _t.totalAjuste;
+  const totalEgresos       = _t.totalEgresos;
+  const breakdownIngresos  = _t.breakdown;
   const totalNeto = activas.reduce((a,c) => a + c.neto, 0);
-  const totalEgresos     = movsGlobal.filter(m => m.importe < 0 && !m.esAnulacion).reduce((a,m) => a+m.importe, 0);
-  const totalVentas      = movsGlobal.filter(m => !m.esAnulacion && m.importe > 0 && norm(m.categoria) === 'venta').reduce((a,m) => a+m.importe, 0);
-  const totalCarga       = movsGlobal.filter(m => !m.esAnulacion && m.importe > 0 && norm(m.categoria).includes('carga de saldo')).reduce((a,m) => a+m.importe, 0);
-  const totalAjuste      = movsGlobal.filter(m => !m.esAnulacion && norm(m.categoria) === 'ajuste caja').reduce((a,m) => a+m.importe, 0);
-  const totalMovs        = activas.reduce((a,c) => a+c.movs.length, 0);
+  const totalMovs = activas.reduce((a,c) => a+c.movs.length, 0);
 
   // ── Egresos por categoría (necesario para PDF y render) ──
   const egresosCats = {};
@@ -921,12 +971,21 @@ function render() {
   document.getElementById('debinBadge').style.display =
     excluidas.some(e => e.toUpperCase()==='DEBIN') ? 'flex' : 'none';
 
+  // ── Comparativa con período anterior (mejora C11) ──
+  const fechasArr = state.fechas || [];
+  const periodoAnterior = buscarPeriodoAnterior(fechasArr[0]||'', fechasArr[fechasArr.length-1]||'', fechasArr.length);
+  const variacion = periodoAnterior ? formatearVariacion(totalIngresos, periodoAnterior.total_ingresos) : null;
+
+  // Tooltip con la fórmula textual (mejora C10)
+  const tooltipFormula = 'Fórmula: Ventas + Carga de saldo cliente + Ajuste caja (con signo) − Anulaciones. Excluye DEBIN, cuentas internas (Caja General/Chica, Banco, Movimientos), pases internos y SALDO INICIAL DE CAJA.';
+
   // ── Stats Ingresos ──
   document.getElementById('statsIngresos').innerHTML = `
-    <div class="stat-card hi-green" style="border-color:rgba(39,199,133,.6);border-width:2px">
-      <div class="sc-lbl">💰 Total Ingresos</div>
+    <div class="stat-card hi-green" style="border-color:rgba(39,199,133,.6);border-width:2px;cursor:pointer" onclick="toggleDesgloseIngresos()" title="${esc(tooltipFormula)}">
+      <div class="sc-lbl">💰 Total Ingresos <span style="float:right;font-size:11px;color:#94a3b8;font-weight:400">▼ desglose</span></div>
       <div class="sc-val c-green">${ars(totalIngresos)}</div>
-      <div class="sc-sub">Ventas + Cobros · neto de anulaciones · sin DEBIN</div>
+      ${variacion ? `<div style="font-size:11px;font-weight:600;color:${variacion.color};margin:2px 0 4px">${variacion.simbolo} ${variacion.texto} <span style="color:var(--text3);font-weight:400">vs ${esc(fmtISOtoDisplay(periodoAnterior.fecha_desde))} – ${esc(fmtISOtoDisplay(periodoAnterior.fecha_hasta))}</span></div>` : ''}
+      <div class="sc-sub">Bruto: ${ars(totalIngresosBrutos)} · neto de anulaciones · sin DEBIN ni cuentas internas</div>
     </div>
     <div class="stat-card hi-blue">
       <div class="sc-lbl">Ventas</div>
@@ -1133,6 +1192,8 @@ function render() {
   `;
 
   renderGrupos(activas);
+  renderDesgloseIngresos(_t);
+  renderCategoriasDesconocidas(detectarCategoriasDesconocidas(activas));
 }
 
 // ── Período label ─────────────────────────────────────────
@@ -1241,6 +1302,134 @@ function norm(s) {
   return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
 }
 
+// Busca en el historial el período inmediatamente anterior al actual.
+// Solo retorna match si la duración es comparable (±50% en cantidad de días)
+// para evitar comparar un día contra un mes entero.
+// Retorna null si no hay match o si historial está vacío.
+function buscarPeriodoAnterior(fechaDesdeActual, fechaHastaActual, diasActuales) {
+  if (!historial || historial.length === 0) return null;
+  if (!fechaDesdeActual) return null;
+  // Filtrar períodos cuyo fecha_hasta sea anterior al fecha_desde actual
+  const anteriores = historial.filter(h => {
+    if (!h.fecha_hasta || !h.fecha_desde) return false;
+    if (h.fecha_hasta >= fechaDesdeActual) return false;
+    // Duración similar: ±50%
+    const dias = h.dias || 1;
+    if (diasActuales > 0) {
+      const ratio = dias / diasActuales;
+      if (ratio < 0.5 || ratio > 2) return false;
+    }
+    return true;
+  });
+  if (anteriores.length === 0) return null;
+  // Elegir el más reciente (mayor fecha_hasta)
+  anteriores.sort((a,b) => (b.fecha_hasta || '').localeCompare(a.fecha_hasta || ''));
+  return anteriores[0];
+}
+
+// Formatea una variación porcentual con signo y color CSS variable
+// Retorna { texto, color, simbolo } — listo para insertar en HTML
+function formatearVariacion(actual, anterior) {
+  if (!anterior || anterior === 0) return null;
+  const diff = actual - anterior;
+  const pctNum = (diff / Math.abs(anterior)) * 100;
+  const signo = diff >= 0 ? '+' : '−';
+  const color = diff >= 0 ? 'var(--green)' : 'var(--red)';
+  const simbolo = diff >= 0 ? '▲' : '▼';
+  return {
+    texto: `${signo}${ars(Math.abs(diff))} (${signo}${Math.abs(pctNum).toFixed(1)}%)`,
+    color, simbolo, diff, pctNum
+  };
+}
+
+// Detecta categorías presentes en los movs que no están en ninguna lista conocida.
+// Sirve para alertar al equipo cuando aparece un nuevo tipo de movimiento que la app
+// no clasifica explícitamente (suele caer como egreso operativo si es negativo).
+// Retorna array de { categoria, count, suma, hojas[] } ordenado por |suma| descendente.
+function detectarCategoriasDesconocidas(cuentas) {
+  // Agrupar listas conocidas (todo en lowercase normalizado)
+  const conocidas = new Set();
+  CATS_INGRESO_PRINCIPAL.forEach(c => conocidas.add(norm(c)));
+  CATS_ANULACION.forEach(c => conocidas.add(norm(c)));
+  CATS_INTERNAS.forEach(c => conocidas.add(norm(c)));
+  CATS_EXCLUIDAS.forEach(c => conocidas.add(norm(c)));
+  // Casos especiales que tratamos como egresos sin estar en CATS_*
+  conocidas.add('mano de obra taller');
+  conocidas.add('saldo inicial');
+  // Cuota sindical: aparece en doc como egreso conocido aunque no esté en listas
+  conocidas.add('cuota sindical');
+  conocidas.add('retiro de saldo cliente');
+
+  const desconocidas = {};
+  cuentas.forEach(c => {
+    c.movs.forEach(m => {
+      const cn = norm(m.categoria);
+      if (!cn) return;
+      // Match si alguna lista conocida está incluida en la categoría o viceversa
+      let known = false;
+      for (const k of conocidas) {
+        if (cn === k || cn.includes(k) || k.includes(cn)) { known = true; break; }
+      }
+      if (known) return;
+      if (!desconocidas[cn]) {
+        desconocidas[cn] = { categoria: m.categoria, count: 0, suma: 0, hojas: new Set() };
+      }
+      desconocidas[cn].count++;
+      desconocidas[cn].suma += m.importe;
+      desconocidas[cn].hojas.add(c.nombre);
+    });
+  });
+  return Object.values(desconocidas)
+    .map(d => ({ ...d, hojas: [...d.hojas] }))
+    .sort((a,b) => Math.abs(b.suma) - Math.abs(a.suma));
+}
+
+function calcularTotalesIngresos(cuentas) {
+  // movs que cuentan al Total Ingresos: sin internos, sin cuentas internas
+  const movsTI = cuentas.flatMap(c => {
+    const esCuentaSinIngreso = CUENTAS_SIN_INGRESO.some(k => norm(c.nombre).includes(norm(k)));
+    if (esCuentaSinIngreso) return [];
+    return c.movs.filter(m => !m.esInterno).map(m => Object.assign({}, m, { _cuenta: c.nombre }));
+  });
+
+  let totalVentas = 0, totalCarga = 0, totalAjuste = 0, totalAnulaciones = 0;
+  const breakdown = {};
+
+  movsTI.forEach(m => {
+    if (!breakdown[m._cuenta]) breakdown[m._cuenta] = { venta:0, carga:0, ajuste:0, anulacion:0 };
+    const cn = norm(m.categoria);
+    if (m.esAnulacion) {
+      totalAnulaciones += m.importe;
+      breakdown[m._cuenta].anulacion += m.importe;
+    } else if (cn.includes('ajuste caja')) {
+      totalAjuste += m.importe;
+      breakdown[m._cuenta].ajuste += m.importe;
+    } else if (cn === 'venta' && m.importe > 0) {
+      totalVentas += m.importe;
+      breakdown[m._cuenta].venta += m.importe;
+    } else if (cn.includes('carga de saldo cliente') && m.importe > 0) {
+      totalCarga += m.importe;
+      breakdown[m._cuenta].carga += m.importe;
+    }
+  });
+
+  const totalBruto = totalVentas + totalCarga + totalAjuste;
+  const totalIngresos = totalBruto + totalAnulaciones;
+
+  // Egresos: todo importe negativo no-anulación. Incluye TODAS las cuentas (las internas también
+  // tienen egresos operativos como Caja Chica → gastos varios, transportes, proveedores).
+  const movsAllReales = cuentas.flatMap(c => c.movs.filter(m => !m.esInterno));
+  const totalEgresos = movsAllReales
+    .filter(m => m.importe < 0 && !m.esAnulacion)
+    .reduce((a,m) => a+m.importe, 0);
+
+  return {
+    totalIngresos, totalBruto,
+    totalVentas, totalCarga, totalAjuste, totalAnulaciones,
+    totalEgresos, breakdown
+  };
+}
+
 function str(row, idx) {
   return idx !== -1 && row[idx] ? row[idx].toString().trim() : '';
 }
@@ -1250,6 +1439,126 @@ function esc(s) {
 }
 
 function toggle(idx) { document.getElementById('card'+idx).classList.toggle('open'); }
+
+// Abre/cierra el panel desplegable de desglose del Total Ingresos
+function toggleDesgloseIngresos() {
+  const panel = document.getElementById('ingDesglosePanel');
+  if (!panel) return;
+  if (panel.style.display === 'none' || !panel.style.display) {
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+// Construye el HTML del panel de desglose con los datos calculados
+function toggleCatsNuevas() {
+  const panel = document.getElementById('catsNuevasPanel');
+  if (panel) panel.classList.toggle('open');
+}
+
+// Renderiza el aviso de categorías desconocidas (mejora C12)
+function renderCategoriasDesconocidas(desconocidas) {
+  const panel = document.getElementById('catsNuevasPanel');
+  if (!panel) return;
+  if (!desconocidas || desconocidas.length === 0) {
+    panel.style.display = 'none';
+    return;
+  }
+  panel.style.display = 'block';
+  const total = desconocidas.length;
+  const sumaTotal = desconocidas.reduce((a,d) => a+d.suma, 0);
+  panel.innerHTML = `
+    <div class="cats-nuevas-header" onclick="toggleCatsNuevas()">
+      <span>⚠️</span>
+      <span>Se detectaron <b>${total} categoría${total!==1?'s':''}</b> que la app no clasifica explícitamente
+        ${sumaTotal !== 0 ? `(${sumaTotal>=0?'+':'−'}${ars(Math.abs(sumaTotal))} en total)` : ''}.
+        Hoy se procesa${total!==1?'n':''} como egreso${total!==1?'s':''} u otros según el signo.</span>
+      <span class="cats-nuevas-toggle">▼ ver detalle</span>
+    </div>
+    <div class="cats-nuevas-body">
+      ${desconocidas.map(d => `
+        <div class="cat-nueva-row">
+          <span class="cat-nueva-name">${esc(d.categoria)}</span>
+          <span class="cat-nueva-count">${d.count} mov${d.count!==1?'s':''}</span>
+          <span class="cat-nueva-monto" style="color:${d.suma<0?'var(--red)':'var(--green)'}">${d.suma<0?'− ':''}${ars(Math.abs(d.suma))}</span>
+          <span class="cat-nueva-hojas">en ${d.hojas.join(', ')}</span>
+        </div>`).join('')}
+      <div style="margin-top:10px;font-size:11px;color:var(--text3);line-height:1.5">
+        Si alguna debería tratarse distinto (excluirse, ser anulación, etc.), agregala en el panel ⚙️ Configuración.
+      </div>
+    </div>`;
+}
+
+function renderDesgloseIngresos(t) {
+  const panel = document.getElementById('ingDesglosePanel');
+  if (!panel) return;
+  // Sólo medios con algún movimiento que sume a ingresos
+  const cuentasConMovs = Object.entries(t.breakdown)
+    .filter(([_, v]) => v.venta || v.carga || v.ajuste || v.anulacion);
+
+  const sec = (label, total, color, rows) => {
+    if (rows.length === 0 && total === 0) return '';
+    const totalStr = (total >= 0 ? '' : '− ') + ars(Math.abs(total));
+    return `
+      <div class="ing-section-lbl">${label} <span class="ing-section-total" style="color:${color||'var(--text)'}">${totalStr}</span></div>
+      ${rows.map(r => `
+        <div class="ing-row">
+          <span class="ing-row-name">${esc(r.nombre)}</span>
+          <span class="ing-row-val">${(r.val<0?'− ':'')}${ars(Math.abs(r.val))}</span>
+        </div>`).join('')}`;
+  };
+
+  const ventaRows = cuentasConMovs
+    .filter(([_,v]) => v.venta !== 0)
+    .map(([n,v]) => ({ nombre:n, val:v.venta }))
+    .sort((a,b) => b.val - a.val);
+  const cargaRows = cuentasConMovs
+    .filter(([_,v]) => v.carga !== 0)
+    .map(([n,v]) => ({ nombre:n, val:v.carga }))
+    .sort((a,b) => b.val - a.val);
+  const ajusteRows = cuentasConMovs
+    .filter(([_,v]) => v.ajuste !== 0)
+    .map(([n,v]) => ({ nombre:n, val:v.ajuste }));
+  const anulRows = cuentasConMovs
+    .filter(([_,v]) => v.anulacion !== 0)
+    .map(([n,v]) => ({ nombre:n, val:v.anulacion }))
+    .sort((a,b) => a.val - b.val);
+
+  const pctAnul = t.totalBruto > 0 ? Math.abs(t.totalAnulaciones)/t.totalBruto*100 : 0;
+
+  panel.innerHTML = `
+    <div class="ing-desglose-header">
+      <div class="ing-desglose-title">▼ Desglose Total Ingresos · por concepto y medio de pago</div>
+      <div class="ing-desglose-close" onclick="toggleDesgloseIngresos()">✕ Cerrar</div>
+    </div>
+    <div class="ing-desglose-body">
+      ${sec('Ventas', t.totalVentas, 'var(--blue)', ventaRows)}
+      ${sec('Carga de saldo cliente', t.totalCarga, 'var(--blue)', cargaRows)}
+      ${ajusteRows.length ? sec('Ajuste caja (con signo)', t.totalAjuste, 'var(--text2)', ajusteRows) : ''}
+      <div class="ing-subtotal">
+        <span>Subtotal bruto</span>
+        <span class="ing-subtotal-val">${ars(t.totalBruto)}</span>
+      </div>
+      ${anulRows.length ? `
+      <div class="ing-section-lbl" style="color:var(--gold)">Anulaciones / devoluciones <span class="ing-section-total" style="color:var(--gold)">− ${ars(Math.abs(t.totalAnulaciones))}</span></div>
+      ${anulRows.map(r => `
+        <div class="ing-row ing-anul-row">
+          <span class="ing-row-name">${esc(r.nombre)}</span>
+          <span class="ing-row-val">− ${ars(Math.abs(r.val))}</span>
+        </div>`).join('')}
+      ` : ''}
+      <div class="ing-final">
+        <span>Total Ingresos neto</span>
+        <span class="ing-final-val">${ars(t.totalIngresos)}</span>
+      </div>
+      <div class="ing-foot-note">
+        Sin DEBIN, sin cuentas internas (Caja General, Caja Chica, Banco SANTANDER, Movimientos de Caja), sin pases internos, sin SALDO INICIAL DE CAJA.
+        ${pctAnul > 0 ? `Anulaciones representan el ${pctAnul.toFixed(1)}% del bruto.` : ''}
+      </div>
+    </div>`;
+}
 
 function showAlert(msg) {
   const el = document.getElementById('alertBox');
@@ -1552,20 +1861,21 @@ function exportarPDF() {
   const activas = cuentas.map(c => {
     const movs = filtrarMovs(c.movs);
     const movsReales = movs.filter(m => !m.esInterno);
-    const ingresos   = movsReales.filter(m => m.importe > 0).reduce((a,m) => a+m.importe, 0);
-    const egresos    = movsReales.filter(m => m.importe < 0).reduce((a,m) => a+m.importe, 0);
-    const neto       = ingresos + egresos;
-    const ventas     = movsReales.filter(m => m.categoria.toLowerCase() === 'venta' && m.importe > 0).reduce((a,m) => a+m.importe, 0);
-    const cargaSaldo = movsReales.filter(m => m.categoria.toLowerCase().includes('carga de saldo') && m.importe > 0).reduce((a,m) => a+m.importe, 0);
+    const ingresos   = movsReales.filter(m => m.importe > 0 && !m.esAnulacion).reduce((a,m) => a+m.importe, 0);
+    const egresos    = movsReales.filter(m => m.importe < 0 && !m.esAnulacion).reduce((a,m) => a+m.importe, 0);
+    const neto       = movs.reduce((a,m) => a+m.importe, 0);
+    const ventas     = movsReales.filter(m => norm(m.categoria) === 'venta' && m.importe > 0).reduce((a,m) => a+m.importe, 0);
+    const cargaSaldo = movsReales.filter(m => norm(m.categoria).includes('carga de saldo') && m.importe > 0).reduce((a,m) => a+m.importe, 0);
     return { nombre: c.nombre, movs, movsReales, ingresos, egresos, neto, ventas, cargaSaldo };
   }).filter(c => c.movs.length > 0);
 
-  const movsGlobal    = activas.flatMap(c => c.movsReales);
-  const totalIngresos = movsGlobal.filter(m => m.importe > 0).reduce((a,m) => a+m.importe, 0);
-  const totalEgresos  = movsGlobal.filter(m => m.importe < 0).reduce((a,m) => a+m.importe, 0);
-  const totalNeto     = totalIngresos + totalEgresos;
-  const totalVentas   = movsGlobal.filter(m => m.categoria.toLowerCase() === 'venta' && m.importe > 0).reduce((a,m) => a+m.importe, 0);
-  const totalCarga    = movsGlobal.filter(m => m.categoria.toLowerCase().includes('carga de saldo') && m.importe > 0).reduce((a,m) => a+m.importe, 0);
+  // Usar la misma función central que la pantalla — garantiza coherencia de cifras
+  const _t = calcularTotalesIngresos(activas);
+  const totalIngresos = _t.totalIngresos;
+  const totalVentas   = _t.totalVentas;
+  const totalCarga    = _t.totalCarga;
+  const totalEgresos  = _t.totalEgresos;
+  const totalNeto     = activas.reduce((a,c) => a+c.neto, 0);
   const totalMovs     = activas.reduce((a,c) => a+c.movsReales.length, 0);
 
   // catList local para el PDF — FIX Bug 2
@@ -1618,7 +1928,7 @@ function exportarPDF() {
         </tbody>
       </table>
     </div>
-    <div class="pdf-footer"><span>Flujo de Caja Diario — ${esc(periodoLabel)}</span><span>Generado: ${fechaGen}</span></div>`;
+    <div class="pdf-footer"><span>Flujo de Caja Diario v.${esc(versionDisplay())} — ${esc(periodoLabel)}</span><span>Generado: ${fechaGen}</span></div>`;
 
   document.getElementById('pdf-toolbar-title').textContent = periodoLabel;
   document.getElementById('pdf-body').innerHTML = html;
@@ -1646,26 +1956,36 @@ async function cargarHistorial() {
 async function guardarPeriodo() {
   if (!sbClient || !state) return;
   const { cuentas, excluidas, fechas } = state;
-  const activas = cuentas.map(c => {
+  // Construir activas con la misma estructura que render() y exportarPDF()
+  const activasFull = cuentas.map(c => {
     const movsReales = c.movs.filter(m => !m.esInterno);
-    const ingresos = movsReales.filter(m=>m.importe>0).reduce((a,m)=>a+m.importe,0);
-    const egresos  = movsReales.filter(m=>m.importe<0).reduce((a,m)=>a+m.importe,0);
-    const ventas   = movsReales.filter(m=>m.categoria.toLowerCase()==='venta'&&m.importe>0).reduce((a,m)=>a+m.importe,0);
-    const carga    = movsReales.filter(m=>m.categoria.toLowerCase().includes('carga de saldo')&&m.importe>0).reduce((a,m)=>a+m.importe,0);
+    const ingresos = movsReales.filter(m=>m.importe>0 && !m.esAnulacion).reduce((a,m)=>a+m.importe,0);
+    const egresos  = movsReales.filter(m=>m.importe<0 && !m.esAnulacion).reduce((a,m)=>a+m.importe,0);
+    const ventas   = movsReales.filter(m=>norm(m.categoria)==='venta'&&m.importe>0).reduce((a,m)=>a+m.importe,0);
+    const carga    = movsReales.filter(m=>norm(m.categoria).includes('carga de saldo')&&m.importe>0).reduce((a,m)=>a+m.importe,0);
     const egresosCats = {};
-    movsReales.filter(m=>m.importe<0).forEach(m=>{ const cat=m.categoria||'Otros egresos'; egresosCats[cat]=(egresosCats[cat]||0)+m.importe; });
-    return { nombre:c.nombre, ingresos, egresos, neto:ingresos+egresos, ventas, cargaSaldo:carga, movimientos:movsReales.length, egresosCats };
+    movsReales.filter(m=>m.importe<0 && !m.esAnulacion).forEach(m=>{ const cat=m.categoria||'Otros egresos'; egresosCats[cat]=(egresosCats[cat]||0)+m.importe; });
+    // neto incluye anulaciones e internos (que no están acá pero conceptualmente)
+    const neto = c.movs.reduce((a,m)=>a+m.importe,0);
+    return { nombre:c.nombre, movs:c.movs, ingresos, egresos, neto, ventas, cargaSaldo:carga, movimientos:movsReales.length, egresosCats };
   }).filter(c=>c.movimientos>0);
 
-  const movsGlobal = activas.flatMap(c=>{const cuenta=cuentas.find(x=>x.nombre===c.nombre);return cuenta?cuenta.movs.filter(m=>!m.esInterno):[];});
-  const totalIngresos = movsGlobal.filter(m=>m.importe>0).reduce((a,m)=>a+m.importe,0);
-  const totalEgresos  = movsGlobal.filter(m=>m.importe<0).reduce((a,m)=>a+m.importe,0);
+  // Usar función central — garantiza coherencia con pantalla y PDF
+  const _t = calcularTotalesIngresos(activasFull);
+  const totalIngresos = _t.totalIngresos;
+  const totalEgresos  = _t.totalEgresos;
+
+  // Guardar en Supabase la versión "ligera" (sin movs, para no exceder el tamaño del campo)
+  const activasLight = activasFull.map(c => ({
+    nombre: c.nombre, ingresos: c.ingresos, egresos: c.egresos, neto: c.neto,
+    ventas: c.ventas, cargaSaldo: c.cargaSaldo, movimientos: c.movimientos, egresosCats: c.egresosCats
+  }));
 
   const registro = {
     archivo: state.fileName, fecha_desde: fechas[0]||'', fecha_hasta: fechas[fechas.length-1]||'',
     dias: fechas.length, total_ingresos: totalIngresos, total_egresos: totalEgresos,
     total_neto: totalIngresos+totalEgresos, fecha_subida: new Date().toISOString(),
-    cuentas: JSON.stringify(activas), fechas: JSON.stringify(fechas),
+    cuentas: JSON.stringify(activasLight), fechas: JSON.stringify(fechas),
   };
 
   try {
@@ -1900,6 +2220,10 @@ async function mostrarUltimoArchivoCargado() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Mostrar versión actual en el header
+  const vb = document.getElementById('versionBadge');
+  if (vb) vb.textContent = `v · Actualizado: ${versionDisplay()}`;
+
   if (typeof XLSX === 'undefined') {
     document.querySelector('.drop h2').textContent='⚠ No se pudo cargar SheetJS';
     document.querySelector('.drop p').textContent='Verificá tu conexión a internet y recargá la página.';
